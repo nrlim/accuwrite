@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Generate JWT
+        // Generate JWT (for localStorage / client use)
         const token = signToken({
             userId: user.id,
             username: user.username,
@@ -47,7 +47,20 @@ export async function POST(req: NextRequest) {
             tenantSlug: user.tenant.slug,
         });
 
-        return NextResponse.json({
+        // ─── Set httpOnly session cookie (used by all Server Actions) ───
+        // jose-signed JWT that getSession() can verify
+        const { SignJWT } = await import('jose');
+        const secretKey = process.env.JWT_SECRET || 'super-secret-key-1234';
+        const key = new TextEncoder().encode(secretKey);
+        const sessionToken = await new SignJWT({ userId: user.id, tenantId: user.tenant.id })
+            .setProtectedHeader({ alg: 'HS256' })
+            .setIssuedAt()
+            .setExpirationTime('7d')
+            .sign(key);
+
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+        const response = NextResponse.json({
             message: "Login successful.",
             token,
             user: {
@@ -62,6 +75,17 @@ export async function POST(req: NextRequest) {
                 slug: user.tenant.slug,
             },
         });
+
+        // Set the 'session' cookie so Server Actions (getSession()) work
+        response.cookies.set('session', sessionToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            expires: expiresAt,
+            sameSite: 'lax',
+            path: '/',
+        });
+
+        return response;
     } catch (error) {
         console.error("Login error:", error);
         return NextResponse.json(

@@ -10,8 +10,12 @@ import {
     Search,
     Settings,
     User,
+    Users,
+    Layers,
+    CreditCard,
+    Landmark,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 import {
     Sidebar,
@@ -36,12 +40,42 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-const navItems = [
-    { title: 'Ringkasan', url: '/dashboard', icon: LayoutDashboard },
-    { title: 'Jurnal Umum', url: '/dashboard/jurnal', icon: BookOpen },
-    { title: 'Buku Besar', url: '/dashboard/buku-besar', icon: Briefcase },
-    { title: 'Laporan Keuangan', url: '/dashboard/laporan', icon: FileText },
-    { title: 'Pengaturan', url: '/dashboard/pengaturan', icon: Settings },
+const navGroups = [
+    {
+        label: 'Utama',
+        items: [
+            { title: 'Ringkasan', url: '/dashboard', icon: LayoutDashboard },
+        ],
+    },
+    {
+        label: 'Akuntansi',
+        items: [
+            { title: 'Bagan Akun', url: '/dashboard/bagan-akun', icon: Layers },
+            { title: 'Jurnal Umum', url: '/dashboard/jurnal', icon: BookOpen },
+            { title: 'Kas & Bank', url: '/dashboard/kas-bank', icon: Landmark },
+            { title: 'Buku Besar', url: '/dashboard/buku-besar', icon: Briefcase },
+        ],
+    },
+    {
+        label: 'Piutang & Hutang',
+        items: [
+            { title: 'Piutang (AR)', url: '/dashboard/piutang', icon: CreditCard },
+            { title: 'Hutang (AP)', url: '/dashboard/hutang', icon: FileText },
+            { title: 'Kontak', url: '/dashboard/kontak', icon: Users },
+        ],
+    },
+    {
+        label: 'Laporan',
+        items: [
+            { title: 'Laporan Keuangan', url: '/dashboard/laporan', icon: FileText },
+        ],
+    },
+    {
+        label: 'Sistem',
+        items: [
+            { title: 'Pengaturan', url: '/dashboard/pengaturan', icon: Settings },
+        ],
+    },
 ];
 
 export default function DashboardLayout({
@@ -50,6 +84,7 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     const router = useRouter();
+    const pathname = usePathname();
     const [tenantName, setTenantName] = React.useState<string>('Memuat...');
     const [userName, setUserName] = React.useState<string>('Pengguna');
 
@@ -72,12 +107,16 @@ export default function DashboardLayout({
         }
     }, [router]);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        // Clear localStorage (client auth)
         localStorage.removeItem('accuwrite_token');
         localStorage.removeItem('accuwrite_user');
         localStorage.removeItem('accuwrite_tenant');
+        // Clear httpOnly session cookie (server actions auth)
+        await fetch('/api/auth/logout', { method: 'POST' });
         router.push('/login');
     };
+
 
     return (
         <SidebarProvider>
@@ -91,19 +130,30 @@ export default function DashboardLayout({
                             <span>Accuwrite</span>
                         </div>
                     </SidebarHeader>
-                    <SidebarContent className="px-2 py-4">
-                        <SidebarMenu>
-                            {navItems.map((item) => (
-                                <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild tooltip={item.title}>
-                                        <a href={item.url} className="flex items-center gap-3">
-                                            <item.icon className="h-4 w-4" />
-                                            <span>{item.title}</span>
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
-                        </SidebarMenu>
+                    <SidebarContent className="px-2 py-4 space-y-4">
+                        {navGroups.map((group) => (
+                            <div key={group.label}>
+                                <p className="px-3 py-1.5 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+                                    {group.label}
+                                </p>
+                                <SidebarMenu>
+                                    {group.items.map((item) => {
+                                        const Icon = item.icon;
+                                        const isActive = pathname === item.url;
+                                        return (
+                                            <SidebarMenuItem key={item.title}>
+                                                <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+                                                    <a href={item.url} className="flex items-center gap-3">
+                                                        <Icon className="h-4 w-4" />
+                                                        <span>{item.title}</span>
+                                                    </a>
+                                                </SidebarMenuButton>
+                                            </SidebarMenuItem>
+                                        );
+                                    })}
+                                </SidebarMenu>
+                            </div>
+                        ))}
                     </SidebarContent>
                     <SidebarFooter className="border-t p-4">
                         <div className="text-xs text-zinc-500 text-center flex flex-col items-center">

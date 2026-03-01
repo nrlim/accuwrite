@@ -8,13 +8,20 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// =================== TENANT & USER ===================
+
 model Tenant {
   id   String @id @default(cuid())
   name String
   slug String @unique
 
-  users     User[]
-  
+  users            User[]
+  accounts         Account[]
+  contacts         Contact[]
+  journalEntries   JournalEntry[]
+  cashTransactions CashTransaction[]
+  bills            Bill[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -45,4 +52,353 @@ enum Role {
   ACCOUNTANT    // Akuntan (Entri Jurnal, Buku Besar)
   AUDITOR       // Auditor (Read-only / Reviewer)
   STAFF         // Staf Umum (Akses terbatas)
+}
+
+// =================== CHART OF ACCOUNTS ===================
+
+model Account {
+  id             String          @id @default(cuid())
+  code           String          // Nomor akun (unik per tenant)
+  name           String          // Nama akun
+  type           AccountType     // Jenis akun
+  category       AccountCategory @default(DETAIL)
+  initialBalance Decimal         @default(0) @db.Decimal(15, 2)
+  description    String?
+
+  // Self-referential untuk hierarki COA
+  parentId String?   @map("parent_id")
+  parent   Account?  @relation("AccountHierarchy", fields: [parentId], references: [id])
+  children Account[] @relation("AccountHierarchy")
+
+  tenantId String @map("tenant_id")
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  journalItems        JournalItem[]
+  cashTransactions    CashTransaction[] @relation("CashAccountTx")
+  counterTransactions CashTransaction[] @relation("CounterAccountTx")
+  billItems           BillItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([code, tenantId])
+  @@index([tenantId])
+  @@index([type, tenantId])
+  @@map("accounts")
+}
+
+enum AccountType {
+  ASSET       // Aset
+  LIABILITY   // Kewajiban/Hutang
+  EQUITY      // Modal
+  REVENUE     // Pendapatan
+  EXPENSE     // Beban
+}
+
+enum AccountCategory {
+  HEADER  // Akun induk (tidak bisa di-posting)
+  DETAIL  // Akun detail (bisa di-posting)
+}
+
+// =================== CONTACTS (CUSTOMERS & VENDORS) ===================
+
+model Contact {
+  id      String      @id @default(cuid())
+  name    String
+  type    ContactType
+  email   String?
+  phone   String?
+  address String?
+  npwp    String?     // NPWP untuk Indonesia
+
+  tenantId String @map("tenant_id")
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  invoices         Invoice[]
+  bills            Bill[]
+  journalItems     JournalItem[]
+  cashTransactions CashTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([type, tenantId])
+  @@map("contacts")
+}
+
+enum ContactType {
+  CUSTOMER  // Pelanggan (untuk Piutang/AR)
+  VENDOR    // Pemasok (untuk Hutang/AP)
+  BOTH      // Keduanya
+}
+
+// =================== JOURNAL ENTRIES ===================
+
+model JournalEntry {
+  id          String        @id @default(cuid())
+  date        DateTime
+  reference   String        // Nomor referensi (INV-001, JV-001, dll)
+  description String
+  status      JournalStatus @default(DRAFT)
+  sourceType  String?       @map("source_type") // "INVOICE", "PAYMENT", "MANUAL"
+  sourceId    String?       @map("source_id")   // ID invoice/payment terkait
+
+  tenantId String @map("tenant_id")
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  items            JournalItem[]
+  invoice          Invoice?         @relation("InvoiceJournal")
+  bill             Bill?            @relation("BillJournal")
+  cashTransaction  CashTransaction? @relation("CashJournal")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([date, tenantId])
+  @@index([reference, tenantId])
+  @@map("journal_entries")
+}
+
+enum JournalStatus {
+  DRAFT   // Belum final
+  POSTED  // Sudah diposting ke buku besar
+  VOID    // Dibatalkan
+}
+
+model JournalItem {
+  id     String  @id @default(cuid())
+  debit  Decimal @default(0) @db.Decimal(15, 2)
+  credit Decimal @default(0) @db.Decimal(15, 2)
+  memo   String?
+
+  journalEntryId String       @map("journal_entry_id")
+  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+
+  accountId String  @map("account_id")
+  account   Account @relation(fields: [accountId], references: [id])
+
+  contactId String?  @map("contact_id")
+  contact   Contact? @relation(fields: [contactId], references: [id])
+
+  @@index([journalEntryId])
+  @@index([accountId])
+  @@map("journal_items")
+}
+
+// =================== INVOICES (ACCOUNTS RECEIVABLE) ===================
+
+model Invoice {
+  id          String        @id @default(cuid())
+  number      String        // Nomor invoice (INV-001)
+  date        DateTime
+  dueDate     DateTime      @map("due_date")
+  status      InvoiceStatus @default(UNPAID)
+  subtotal    Decimal       @db.Decimal(15, 2)
+  taxAmount   Decimal       @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  totalAmount Decimal       @map("total_amount") @db.Decimal(15, 2)
+  paidAmount  Decimal       @default(0) @map("paid_amount") @db.Decimal(15, 2)
+  notes       String?
+
+  contactId String  @map("contact_id")
+  contact   Contact @relation(fields: [contactId], references: [id])
+
+  journalEntryId String?       @unique @map("journal_entry_id")
+  journalEntry   JournalEntry? @relation("InvoiceJournal", fields: [journalEntryId], references: [id])
+
+  tenantId String @map("tenant_id")
+
+  items    InvoiceItem[]
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([number, tenantId])
+  @@index([tenantId])
+  @@index([contactId])
+  @@index([status, tenantId])
+  @@map("invoices")
+}
+
+enum InvoiceStatus {
+  DRAFT     // Draft belum dikirim
+  UNPAID    // Sudah dikirim, belum bayar
+  PARTIAL   // Bayar sebagian
+  PAID      // Lunas
+  OVERDUE   // Jatuh tempo belum bayar
+  VOID      // Dibatalkan
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  description String
+  quantity    Decimal @db.Decimal(10, 2)
+  unitPrice   Decimal @map("unit_price") @db.Decimal(15, 2)
+  taxRate     Decimal @default(0) @map("tax_rate") @db.Decimal(5, 2)
+  amount      Decimal @db.Decimal(15, 2)
+
+  invoiceId String  @map("invoice_id")
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("invoice_items")
+}
+
+// =================== PAYMENTS ===================
+
+model Payment {
+  id            String   @id @default(cuid())
+  date          DateTime
+  amount        Decimal  @db.Decimal(15, 2)
+  method        String   // Transfer, Tunai, dll
+  reference     String?  // Nomor referensi pembayaran
+  notes         String?
+
+  invoiceId String  @map("invoice_id")
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+
+  tenantId String @map("tenant_id")
+
+  createdAt DateTime @default(now())
+
+  @@index([invoiceId])
+  @@index([tenantId])
+  @@map("payments")
+}
+
+// =================== KAS & BANK ===================
+
+model CashTransaction {
+  id          String     @id @default(cuid())
+  date        DateTime
+  type        CashTxType // IN | OUT
+  amount      Decimal    @db.Decimal(15, 2)
+  description String     // User-friendly description
+  reference   String?    // Nomor bukti / referensi bank
+  notes       String?
+
+  // Akun kas/bank yang terlibat (Kas, Bank BCA, dll)
+  cashAccountId String  @map("cash_account_id")
+  cashAccount   Account @relation("CashAccountTx", fields: [cashAccountId], references: [id])
+
+  // Akun lawan (Pendapatan, Beban, Piutang, dll)
+  counterAccountId String  @map("counter_account_id")
+  counterAccount   Account @relation("CounterAccountTx", fields: [counterAccountId], references: [id])
+
+  // Optional: contact yang terkait (pembayar / penerima)
+  contactId String?  @map("contact_id")
+  contact   Contact? @relation(fields: [contactId], references: [id])
+
+  // Jurnal yang dibuat otomatis
+  journalEntryId String?       @unique @map("journal_entry_id")
+  journalEntry   JournalEntry? @relation("CashJournal", fields: [journalEntryId], references: [id])
+
+  // Bank Reconciliation
+  reconciled   Boolean   @default(false)
+  reconciledAt DateTime? @map("reconciled_at")
+
+  tenantId String @map("tenant_id")
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([cashAccountId, tenantId])
+  @@index([date, tenantId])
+  @@index([reconciled, tenantId])
+  @@map("cash_transactions")
+}
+
+enum CashTxType {
+  IN   // Uang Masuk
+  OUT  // Uang Keluar
+}
+
+// =================== BILLS (ACCOUNTS PAYABLE) ===================
+
+model Bill {
+  id          String     @id @default(cuid())
+  number      String     // Nomor tagihan (BILL-001)
+  date        DateTime
+  dueDate     DateTime   @map("due_date")
+  status      BillStatus @default(UNPAID)
+  subtotal    Decimal    @db.Decimal(15, 2)
+  taxAmount   Decimal    @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  totalAmount Decimal    @map("total_amount") @db.Decimal(15, 2)
+  paidAmount  Decimal    @default(0) @map("paid_amount") @db.Decimal(15, 2)
+  notes       String?
+
+  // Vendor
+  contactId String  @map("contact_id")
+  contact   Contact @relation(fields: [contactId], references: [id])
+
+  // Auto-generated journal (Debit Beban/Aset, Kredit Hutang)
+  journalEntryId String?       @unique @map("journal_entry_id")
+  journalEntry   JournalEntry? @relation("BillJournal", fields: [journalEntryId], references: [id])
+
+  tenantId String @map("tenant_id")
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  items    BillItem[]
+  payments BillPayment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([number, tenantId])
+  @@index([tenantId])
+  @@index([contactId])
+  @@index([status, tenantId])
+  @@map("bills")
+}
+
+enum BillStatus {
+  DRAFT    // Draft belum dikonfirmasi
+  UNPAID   // Belum dibayar
+  PARTIAL  // Bayar sebagian
+  PAID     // Lunas
+  OVERDUE  // Jatuh tempo belum bayar
+  VOID     // Dibatalkan
+}
+
+model BillItem {
+  id          String  @id @default(cuid())
+  description String
+  quantity    Decimal @db.Decimal(10, 2)
+  unitPrice   Decimal @map("unit_price") @db.Decimal(15, 2)
+  taxRate     Decimal @default(0) @map("tax_rate") @db.Decimal(5, 2)
+  amount      Decimal @db.Decimal(15, 2)
+
+  // Akun beban/aset yang di-debit per baris
+  accountId String  @map("account_id")
+  account   Account @relation(fields: [accountId], references: [id])
+
+  billId String @map("bill_id")
+  bill   Bill   @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  @@index([billId])
+  @@map("bill_items")
+}
+
+model BillPayment {
+  id        String   @id @default(cuid())
+  date      DateTime
+  amount    Decimal  @db.Decimal(15, 2)
+  method    String   // Transfer, Tunai, dll
+  reference String?  // Nomor referensi
+  notes     String?
+
+  billId String @map("bill_id")
+  bill   Bill   @relation(fields: [billId], references: [id])
+
+  tenantId String @map("tenant_id")
+
+  createdAt DateTime @default(now())
+
+  @@index([billId])
+  @@index([tenantId])
+  @@map("bill_payments")
 }
