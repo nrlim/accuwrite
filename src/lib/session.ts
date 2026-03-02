@@ -5,11 +5,11 @@ const secretKey = process.env.JWT_SECRET || 'super-secret-key-1234';
 const key = new TextEncoder().encode(secretKey);
 
 export async function createSession(userId: string, tenantId: string) {
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const expiresAt = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour
     const session = await new SignJWT({ userId, tenantId })
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
-        .setExpirationTime('7d')
+        .setExpirationTime('1h')
         .sign(key);
 
     const cookieStore = await cookies();

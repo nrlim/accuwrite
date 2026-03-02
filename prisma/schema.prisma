@@ -21,6 +21,7 @@ model Tenant {
   journalEntries   JournalEntry[]
   cashTransactions CashTransaction[]
   bills            Bill[]
+  rolePermissions  RolePermission[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -52,6 +53,24 @@ enum Role {
   ACCOUNTANT    // Akuntan (Entri Jurnal, Buku Besar)
   AUDITOR       // Auditor (Read-only / Reviewer)
   STAFF         // Staf Umum (Akses terbatas)
+}
+
+// =================== ROLE PERMISSIONS ===================
+
+model RolePermission {
+  id        String   @id @default(cuid())
+  role      Role
+  features  String   // Disimpan sebagai JSON string / text dipisahkan koma
+
+  tenantId  String   @map("tenant_id")
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([role, tenantId])
+  @@index([tenantId])
+  @@map("role_permissions")
 }
 
 // =================== CHART OF ACCOUNTS ===================

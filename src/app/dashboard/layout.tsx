@@ -16,6 +16,7 @@ import {
     Landmark,
 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
+import { getMyPermissions } from '@/lib/actions/permission-actions';
 
 import {
     Sidebar,
@@ -40,7 +41,19 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-const navGroups = [
+type NavItem = {
+    title: string;
+    url: string;
+    icon: React.ElementType; // Better than 'any', standard for Lucide icons
+    roles?: string[];
+};
+
+type NavGroup = {
+    label: string;
+    items: NavItem[];
+};
+
+const navGroups: NavGroup[] = [
     {
         label: 'Utama',
         items: [
@@ -50,10 +63,10 @@ const navGroups = [
     {
         label: 'Akuntansi',
         items: [
-            { title: 'Bagan Akun', url: '/dashboard/bagan-akun', icon: Layers },
-            { title: 'Jurnal Umum', url: '/dashboard/jurnal', icon: BookOpen },
-            { title: 'Kas & Bank', url: '/dashboard/kas-bank', icon: Landmark },
-            { title: 'Buku Besar', url: '/dashboard/buku-besar', icon: Briefcase },
+            { title: 'Bagan Akun', url: '/dashboard/bagan-akun', icon: Layers, roles: ['OWNER', 'ADMIN', 'MANAGER', 'ACCOUNTANT', 'AUDITOR'] },
+            { title: 'Jurnal Umum', url: '/dashboard/jurnal', icon: BookOpen, roles: ['OWNER', 'ADMIN', 'MANAGER', 'ACCOUNTANT', 'AUDITOR'] },
+            { title: 'Kas & Bank', url: '/dashboard/kas-bank', icon: Landmark, roles: ['OWNER', 'ADMIN', 'MANAGER', 'ACCOUNTANT', 'AUDITOR'] },
+            { title: 'Buku Besar', url: '/dashboard/buku-besar', icon: Briefcase, roles: ['OWNER', 'ADMIN', 'MANAGER', 'ACCOUNTANT', 'AUDITOR'] },
         ],
     },
     {
@@ -67,13 +80,14 @@ const navGroups = [
     {
         label: 'Laporan',
         items: [
-            { title: 'Laporan Keuangan', url: '/dashboard/laporan', icon: FileText },
+            { title: 'Laporan Keuangan', url: '/dashboard/laporan', icon: FileText, roles: ['OWNER', 'ADMIN', 'MANAGER', 'ACCOUNTANT', 'AUDITOR'] },
         ],
     },
     {
         label: 'Sistem',
         items: [
-            { title: 'Pengaturan', url: '/dashboard/pengaturan', icon: Settings },
+            { title: 'Manajemen Staf', url: '/dashboard/settings/users', icon: Users },
+            { title: 'Pengaturan Hak Akses', url: '/dashboard/settings/permissions', icon: Settings },
         ],
     },
 ];
@@ -87,6 +101,8 @@ export default function DashboardLayout({
     const pathname = usePathname();
     const [tenantName, setTenantName] = React.useState<string>('Memuat...');
     const [userName, setUserName] = React.useState<string>('Pengguna');
+    const [userRole, setUserRole] = React.useState<string>('');
+    const [allowedUrls, setAllowedUrls] = React.useState<string[] | null>(null);
 
     React.useEffect(() => {
         // Authenticate client side
@@ -102,6 +118,10 @@ export default function DashboardLayout({
 
             if (tenant.name) setTenantName(tenant.name);
             if (user.fullName) setUserName(user.fullName);
+            if (user.role) {
+                setUserRole(user.role);
+                getMyPermissions(user.role).then(res => setAllowedUrls(res.urls));
+            }
         } catch (e) {
             console.error('Failed to parse auth data');
         }
@@ -131,29 +151,38 @@ export default function DashboardLayout({
                         </div>
                     </SidebarHeader>
                     <SidebarContent className="px-2 py-4 space-y-4">
-                        {navGroups.map((group) => (
-                            <div key={group.label}>
-                                <p className="px-3 py-1.5 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
-                                    {group.label}
-                                </p>
-                                <SidebarMenu>
-                                    {group.items.map((item) => {
-                                        const Icon = item.icon;
-                                        const isActive = pathname === item.url;
-                                        return (
-                                            <SidebarMenuItem key={item.title}>
-                                                <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
-                                                    <a href={item.url} className="flex items-center gap-3">
-                                                        <Icon className="h-4 w-4" />
-                                                        <span>{item.title}</span>
-                                                    </a>
-                                                </SidebarMenuButton>
-                                            </SidebarMenuItem>
-                                        );
-                                    })}
-                                </SidebarMenu>
-                            </div>
-                        ))}
+                        {navGroups.map((group) => {
+                            const filteredItems = group.items.filter(item => {
+                                if (!allowedUrls) return false;
+                                return allowedUrls.includes(item.url);
+                            });
+
+                            if (filteredItems.length === 0) return null;
+
+                            return (
+                                <div key={group.label}>
+                                    <p className="px-3 py-1.5 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+                                        {group.label}
+                                    </p>
+                                    <SidebarMenu>
+                                        {filteredItems.map((item) => {
+                                            const Icon = item.icon;
+                                            const isActive = pathname === item.url;
+                                            return (
+                                                <SidebarMenuItem key={item.title}>
+                                                    <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+                                                        <a href={item.url} className="flex items-center gap-3">
+                                                            <Icon className="h-4 w-4" />
+                                                            <span>{item.title}</span>
+                                                        </a>
+                                                    </SidebarMenuButton>
+                                                </SidebarMenuItem>
+                                            );
+                                        })}
+                                    </SidebarMenu>
+                                </div>
+                            );
+                        })}
                     </SidebarContent>
                     <SidebarFooter className="border-t p-4">
                         <div className="text-xs text-zinc-500 text-center flex flex-col items-center">
@@ -195,7 +224,7 @@ export default function DashboardLayout({
                                     <DropdownMenuLabel>
                                         <div className="flex flex-col">
                                             <span>{userName}</span>
-                                            <span className="text-xs text-zinc-500 font-normal">Administrator</span>
+                                            <span className="text-xs text-zinc-500 font-normal">{userRole || 'Pengguna'}</span>
                                         </div>
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
@@ -203,10 +232,20 @@ export default function DashboardLayout({
                                         <User className="mr-2 h-4 w-4" />
                                         <span>Profil</span>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <Settings className="mr-2 h-4 w-4" />
-                                        <span>Pengaturan</span>
-                                    </DropdownMenuItem>
+
+                                    {allowedUrls?.includes('/dashboard/settings/permissions') && (
+                                        <DropdownMenuItem onClick={() => router.push('/dashboard/settings/permissions')} className="cursor-pointer">
+                                            <Settings className="mr-2 h-4 w-4" />
+                                            <span>Pengaturan Hak Akses</span>
+                                        </DropdownMenuItem>
+                                    )}
+
+                                    {allowedUrls?.includes('/dashboard/settings/users') && (
+                                        <DropdownMenuItem onClick={() => router.push('/dashboard/settings/users')} className="cursor-pointer">
+                                            <Users className="mr-2 h-4 w-4" />
+                                            <span>Manajemen Staf</span>
+                                        </DropdownMenuItem>
+                                    )}
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer" onClick={handleLogout}>
                                         <LogOut className="mr-2 h-4 w-4" />
