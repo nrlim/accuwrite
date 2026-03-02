@@ -104,14 +104,14 @@ export function InvoiceFormModal({ isOpen, accounts, contacts, onClose, onSucces
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                    className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4"
                     onClick={(e) => e.target === e.currentTarget && onClose()}
                 >
                     <motion.div
-                        initial={{ scale: 0.93, y: 20 }}
+                        initial={{ scale: 0.93, y: 100 }}
                         animate={{ scale: 1, y: 0 }}
-                        exit={{ scale: 0.93, y: 20 }}
-                        className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[95vh] overflow-y-auto border border-zinc-200 dark:border-zinc-700"
+                        exit={{ scale: 0.93, y: 100 }}
+                        className="bg-white dark:bg-zinc-900 rounded-none sm:rounded-2xl shadow-2xl w-full max-w-3xl h-[100dvh] sm:h-auto sm:max-h-[95vh] overflow-y-auto border-t sm:border border-zinc-200 dark:border-zinc-700 flex flex-col"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between p-6 border-b border-zinc-100 dark:border-zinc-800 sticky top-0 bg-white dark:bg-zinc-900 z-10">
@@ -128,11 +128,11 @@ export function InvoiceFormModal({ isOpen, accounts, contacts, onClose, onSucces
                             {/* Customer & Dates */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="space-y-1.5">
-                                    <Label className="text-xs font-medium">Customer *</Label>
+                                    <Label className="text-sm font-medium">Customer *</Label>
                                     <select
                                         value={form.contactId}
                                         onChange={(e) => setForm({ ...form, contactId: e.target.value })}
-                                        className="w-full text-sm border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                        className="w-full text-base sm:text-sm border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg px-3 min-h-[48px] sm:min-h-[44px] focus:outline-none focus:ring-2 focus:ring-brand-500"
                                         required
                                     >
                                         <option value="">— Pilih Customer —</option>
@@ -142,23 +142,23 @@ export function InvoiceFormModal({ isOpen, accounts, contacts, onClose, onSucces
                                     </select>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label className="text-xs font-medium">Tanggal Invoice *</Label>
-                                    <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="text-sm" required />
+                                    <Label className="text-sm font-medium">Tanggal Invoice *</Label>
+                                    <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="text-base sm:text-sm min-h-[48px] sm:min-h-[44px] rounded-lg" required />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label className="text-xs font-medium">Jatuh Tempo *</Label>
-                                    <Input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} className="text-sm" required />
+                                    <Label className="text-sm font-medium">Jatuh Tempo *</Label>
+                                    <Input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} className="text-base sm:text-sm min-h-[48px] sm:min-h-[44px] rounded-lg" required />
                                 </div>
                             </div>
 
                             {/* Accounting Accounts */}
                             <div className="grid grid-cols-2 gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
                                 <div className="space-y-1.5">
-                                    <Label className="text-xs font-medium text-blue-700 dark:text-blue-400">Akun Piutang (Debit) *</Label>
+                                    <Label className="text-sm font-medium text-blue-700 dark:text-blue-400">Akun Piutang (Debit) *</Label>
                                     <select
                                         value={form.arAccountId}
                                         onChange={(e) => setForm({ ...form, arAccountId: e.target.value })}
-                                        className="w-full text-sm border border-blue-200 dark:border-blue-700 bg-white dark:bg-zinc-900 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                        className="w-full text-base sm:text-sm border border-blue-200 dark:border-blue-700 bg-white dark:bg-zinc-900 rounded-lg px-3 min-h-[48px] sm:min-h-[44px] focus:outline-none focus:ring-2 focus:ring-brand-500"
                                         required
                                     >
                                         <option value="">— Pilih Akun Piutang —</option>
@@ -168,11 +168,11 @@ export function InvoiceFormModal({ isOpen, accounts, contacts, onClose, onSucces
                                     </select>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label className="text-xs font-medium text-blue-700 dark:text-blue-400">Akun Pendapatan (Kredit) *</Label>
+                                    <Label className="text-sm font-medium text-blue-700 dark:text-blue-400">Akun Pendapatan (Kredit) *</Label>
                                     <select
                                         value={form.revenueAccountId}
                                         onChange={(e) => setForm({ ...form, revenueAccountId: e.target.value })}
-                                        className="w-full text-sm border border-blue-200 dark:border-blue-700 bg-white dark:bg-zinc-900 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                        className="w-full text-base sm:text-sm border border-blue-200 dark:border-blue-700 bg-white dark:bg-zinc-900 rounded-lg px-3 min-h-[48px] sm:min-h-[44px] focus:outline-none focus:ring-2 focus:ring-brand-500"
                                         required
                                     >
                                         <option value="">— Pilih Akun Pendapatan —</option>
@@ -192,12 +192,12 @@ export function InvoiceFormModal({ isOpen, accounts, contacts, onClose, onSucces
                                     <Label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Item Invoice</Label>
                                 </div>
                                 <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden">
-                                    <div className="grid grid-cols-[1fr_80px_140px_80px_100px_auto] bg-zinc-50 dark:bg-zinc-800/60 border-b border-zinc-200 dark:border-zinc-700">
+                                    <div className="hidden sm:grid grid-cols-[1fr_80px_140px_80px_100px_auto] bg-zinc-50 dark:bg-zinc-800/60 border-b border-zinc-200 dark:border-zinc-700">
                                         {['Deskripsi', 'Qty', 'Harga', 'PPN%', 'Jumlah', ''].map((h) => (
                                             <div key={h} className="px-3 py-2 text-xs font-semibold text-zinc-500 uppercase">{h}</div>
                                         ))}
                                     </div>
-                                    <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                                    <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
                                         {items.map((item, idx) => {
                                             const { total } = calcItem(item);
                                             return (
@@ -205,51 +205,74 @@ export function InvoiceFormModal({ isOpen, accounts, contacts, onClose, onSucces
                                                     key={idx}
                                                     initial={{ opacity: 0 }}
                                                     animate={{ opacity: 1 }}
-                                                    className="grid grid-cols-[1fr_80px_140px_80px_100px_auto] items-center"
+                                                    className="flex flex-col sm:grid sm:grid-cols-[1fr_80px_140px_80px_100px_auto] sm:items-center p-3 sm:p-0 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 relative gap-3 sm:gap-0"
                                                 >
-                                                    <div className="px-2 py-2">
+                                                    {/* Mobile Delete Button (top right) */}
+                                                    <div className="absolute top-3 right-3 sm:hidden">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => items.length > 1 && setItems((p) => p.filter((_, i) => i !== idx))}
+                                                            disabled={items.length <= 1}
+                                                            className="p-2 rounded bg-red-50 text-red-600 disabled:opacity-30"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="sm:px-2 sm:py-2 pr-12 sm:pr-2">
+                                                        <Label className="text-xs sm:hidden mb-1 block">Deskripsi Barang/Jasa</Label>
                                                         <Input
                                                             value={item.description}
                                                             onChange={(e) => updateItem(idx, 'description', e.target.value)}
-                                                            placeholder="Nama barang/jasa..."
-                                                            className="text-sm h-8"
+                                                            placeholder="Nama barang..."
+                                                            className="text-base sm:text-sm min-h-[44px] sm:min-h-0 sm:h-8"
                                                             required
                                                         />
                                                     </div>
-                                                    <div className="px-2 py-2">
-                                                        <Input
-                                                            type="number"
-                                                            value={item.quantity}
-                                                            onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
-                                                            className="text-sm h-8 text-right font-mono"
-                                                            min="0.01"
-                                                            step="0.01"
-                                                        />
+
+                                                    <div className="grid grid-cols-2 sm:contents gap-3">
+                                                        <div className="sm:px-2 sm:py-2">
+                                                            <Label className="text-xs sm:hidden mb-1 block">Kuantitas (Qty)</Label>
+                                                            <Input
+                                                                type="number"
+                                                                value={item.quantity}
+                                                                onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
+                                                                className="text-base sm:text-sm min-h-[44px] sm:min-h-0 sm:h-8 sm:text-right font-mono"
+                                                                min="0.01"
+                                                                step="0.01"
+                                                            />
+                                                        </div>
+                                                        <div className="sm:px-2 sm:py-2">
+                                                            <Label className="text-xs sm:hidden mb-1 block">Harga Satuan</Label>
+                                                            <Input
+                                                                type="number"
+                                                                value={item.unitPrice}
+                                                                onChange={(e) => updateItem(idx, 'unitPrice', e.target.value)}
+                                                                placeholder="0"
+                                                                className="text-base sm:text-sm min-h-[44px] sm:min-h-0 sm:h-8 sm:text-right font-mono"
+                                                                min="0"
+                                                            />
+                                                        </div>
                                                     </div>
-                                                    <div className="px-2 py-2">
-                                                        <Input
-                                                            type="number"
-                                                            value={item.unitPrice}
-                                                            onChange={(e) => updateItem(idx, 'unitPrice', e.target.value)}
-                                                            placeholder="0"
-                                                            className="text-sm h-8 text-right font-mono"
-                                                            min="0"
-                                                        />
-                                                    </div>
-                                                    <div className="px-2 py-2">
+
+                                                    <div className="sm:px-2 sm:py-2">
+                                                        <Label className="text-xs sm:hidden mb-1 block">PPN (%)</Label>
                                                         <Input
                                                             type="number"
                                                             value={item.taxRate}
                                                             onChange={(e) => updateItem(idx, 'taxRate', e.target.value)}
-                                                            className="text-sm h-8 text-right font-mono"
+                                                            className="text-base sm:text-sm min-h-[44px] sm:min-h-0 sm:h-8 sm:text-right font-mono w-full sm:w-auto"
                                                             min="0"
                                                             max="100"
                                                         />
                                                     </div>
-                                                    <div className="px-3 py-2 text-sm font-mono font-semibold text-right text-zinc-800 dark:text-zinc-200">
+
+                                                    <div className="flex justify-between items-center sm:block pt-2 sm:pt-0 sm:px-3 py-2 text-base sm:text-sm font-mono font-bold sm:font-semibold text-right text-zinc-800 dark:text-zinc-200 border-t sm:border-0 border-dashed mt-1 sm:mt-0">
+                                                        <span className="sm:hidden text-sm font-sans font-medium text-zinc-500">Subtotal</span>
                                                         {total.toLocaleString('id-ID', { minimumFractionDigits: 0 })}
                                                     </div>
-                                                    <div className="px-2 py-2">
+
+                                                    <div className="hidden sm:block px-2 py-2 text-center">
                                                         <button
                                                             type="button"
                                                             onClick={() => items.length > 1 && setItems((p) => p.filter((_, i) => i !== idx))}
@@ -294,25 +317,27 @@ export function InvoiceFormModal({ isOpen, accounts, contacts, onClose, onSucces
                             </div>
 
                             {/* Notes */}
-                            <div className="space-y-1.5">
-                                <Label className="text-xs font-medium">Catatan</Label>
+                            <div className="space-y-1.5 mb-24 sm:mb-0">
+                                <Label className="text-sm font-medium">Catatan</Label>
                                 <Input
                                     value={form.notes}
                                     onChange={(e) => setForm({ ...form, notes: e.target.value })}
                                     placeholder="Catatan tambahan untuk customer..."
-                                    className="text-sm"
+                                    className="text-base sm:text-sm min-h-[48px] sm:min-h-[44px] rounded-lg"
                                 />
                             </div>
+                        </form>
 
-                            {/* Actions */}
-                            <div className="flex gap-3 pt-2">
-                                <Button type="button" variant="outline" className="flex-1" onClick={onClose}>Batal</Button>
-                                <Button type="submit" disabled={isPending} className="flex-1 bg-brand-600 hover:bg-brand-700 text-white gap-2">
-                                    {isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                        {/* Sticky Bottom Actions */}
+                        <div className="mt-auto p-4 sm:p-5 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sticky bottom-0 z-10 shadow-[0_-10px_10px_-10px_rgba(0,0,0,0.05)]">
+                            <div className="flex gap-3">
+                                <Button type="button" variant="outline" className="flex-1 min-h-[48px] sm:min-h-[44px] text-base sm:text-sm border-zinc-300" onClick={onClose}>Batal</Button>
+                                <Button onClick={handleSubmit} disabled={isPending} className="flex-1 bg-brand-600 hover:bg-brand-700 text-white gap-2 min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-bold shadow-lg shadow-brand-500/20">
+                                    {isPending ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
                                     Buat Invoice
                                 </Button>
                             </div>
-                        </form>
+                        </div>
                     </motion.div>
                 </motion.div>
             )}

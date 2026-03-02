@@ -117,14 +117,14 @@ function PaymentModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
             <motion.div
-                initial={{ scale: 0.95, y: 20 }}
+                initial={{ scale: 0.95, y: 100 }}
                 animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.95, y: 20 }}
-                className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md border border-zinc-200 dark:border-zinc-700"
+                exit={{ scale: 0.95, y: 100 }}
+                className="bg-white dark:bg-zinc-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md border-t sm:border border-zinc-200 dark:border-zinc-700 max-h-[90vh] overflow-y-auto"
             >
                 <div className="flex items-center justify-between p-5 border-b border-zinc-100 dark:border-zinc-800">
                     <div>
@@ -145,21 +145,21 @@ function PaymentModal({
 
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                            <Label className="text-xs">Tanggal *</Label>
-                            <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="text-sm" />
+                            <Label className="text-sm font-medium">Tanggal *</Label>
+                            <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="text-base sm:text-sm min-h-[44px] rounded-lg" />
                         </div>
                         <div className="space-y-1.5">
-                            <Label className="text-xs">Jumlah *</Label>
-                            <Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} className="text-sm font-mono" min="1" max={remaining} step="0.01" />
+                            <Label className="text-sm font-medium">Jumlah *</Label>
+                            <Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} className="text-base sm:text-sm font-mono min-h-[44px] rounded-lg" min="1" max={remaining} step="0.01" />
                         </div>
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label className="text-xs">Metode Pembayaran *</Label>
+                        <Label className="text-sm font-medium">Metode Pembayaran *</Label>
                         <select
                             value={form.method}
                             onChange={(e) => setForm({ ...form, method: e.target.value })}
-                            className="w-full text-sm border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                            className="w-full text-base sm:text-sm border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg px-3 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-brand-500"
                         >
                             <option>Transfer Bank</option>
                             <option>Tunai</option>
@@ -170,11 +170,11 @@ function PaymentModal({
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label className="text-xs">Akun Kas/Bank (Debit) *</Label>
+                        <Label className="text-sm font-medium">Akun Kas/Bank (Debit) *</Label>
                         <select
                             value={form.cashAccountId}
                             onChange={(e) => setForm({ ...form, cashAccountId: e.target.value })}
-                            className="w-full text-sm border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                            className="w-full text-base sm:text-sm border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg px-3 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-brand-500"
                             required
                         >
                             <option value="">— Pilih Akun Kas —</option>
@@ -185,11 +185,11 @@ function PaymentModal({
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label className="text-xs">Akun Piutang (Kredit) *</Label>
+                        <Label className="text-sm font-medium">Akun Piutang (Kredit) *</Label>
                         <select
                             value={form.arAccountId}
                             onChange={(e) => setForm({ ...form, arAccountId: e.target.value })}
-                            className="w-full text-sm border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                            className="w-full text-base sm:text-sm border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg px-3 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-brand-500"
                             required
                         >
                             <option value="">— Pilih Akun Piutang —</option>
@@ -199,18 +199,20 @@ function PaymentModal({
                         </select>
                     </div>
 
-                    <div className="space-y-1.5">
-                        <Label className="text-xs">Referensi</Label>
-                        <Input placeholder="No. bukti transfer..." value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} className="text-sm" />
-                    </div>
-
-                    <div className="flex gap-3 pt-1">
-                        <Button type="button" variant="outline" className="flex-1" onClick={onClose}>Batal</Button>
-                        <Button type="submit" disabled={isPending} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
-                            <Banknote className="h-4 w-4" /> Simpan Pembayaran
-                        </Button>
+                    <div className="space-y-1.5 mb-24">
+                        <Label className="text-sm font-medium">Referensi</Label>
+                        <Input placeholder="No. bukti transfer..." value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} className="text-base sm:text-sm min-h-[44px] rounded-lg" />
                     </div>
                 </form>
+
+                <div className="p-4 sm:p-5 border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 sticky bottom-0 z-10">
+                    <div className="flex gap-3">
+                        <Button type="button" variant="outline" className="flex-1 min-h-[44px]" onClick={onClose}>Batal</Button>
+                        <Button onClick={handleSubmit} disabled={isPending} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 min-h-[44px]">
+                            <Banknote className="h-4 w-4" /> Simpan
+                        </Button>
+                    </div>
+                </div>
             </motion.div>
         </motion.div>
     );
@@ -236,14 +238,14 @@ function InvoiceDetail({ invoice, accounts, onClose, onPayment }: {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
             <motion.div
-                initial={{ scale: 0.95, y: 20 }}
+                initial={{ scale: 0.95, y: 100 }}
                 animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.95, y: 20 }}
-                className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-zinc-200 dark:border-zinc-700"
+                exit={{ scale: 0.95, y: 100 }}
+                className="bg-white dark:bg-zinc-900 w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] sm:rounded-2xl shadow-2xl overflow-y-auto sm:max-w-2xl flex flex-col"
             >
                 {/* Header */}
                 <div className="flex items-start justify-between p-6 border-b border-zinc-100 dark:border-zinc-800 sticky top-0 bg-white dark:bg-zinc-900 z-10">
@@ -282,34 +284,56 @@ function InvoiceDetail({ invoice, accounts, onClose, onPayment }: {
                         </div>
                     </div>
 
-                    {/* Items Table */}
-                    <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
-                        <table className="w-full text-sm">
-                            <thead className="bg-zinc-50 dark:bg-zinc-800/60">
-                                <tr>
-                                    <th className="text-left px-3 py-2 text-xs font-semibold text-zinc-500 uppercase">Deskripsi</th>
-                                    <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-500 uppercase">Qty</th>
-                                    <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-500 uppercase">Harga</th>
-                                    <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-500 uppercase">Jumlah</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                                {invoice.items.map((item) => (
-                                    <tr key={item.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40">
-                                        <td className="px-3 py-2.5">{item.description}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono">{Number(item.quantity)}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono">{fmt(item.unitPrice)}</td>
-                                        <td className="px-3 py-2.5 text-right font-mono font-medium">{fmt(item.amount)}</td>
+                    {/* Items Table/Cards for Mobile */}
+                    <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 hidden sm:block">Daftar Item</h4>
+                        {/* Desktop Table View */}
+                        <div className="hidden sm:block rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+                            <table className="w-full text-sm">
+                                <thead className="bg-zinc-50 dark:bg-zinc-800/60 border-b border-zinc-200 dark:border-zinc-700">
+                                    <tr>
+                                        <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Deskripsi</th>
+                                        <th className="text-right px-4 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Qty</th>
+                                        <th className="text-right px-4 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Harga</th>
+                                        <th className="text-right px-4 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Jumlah</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                            <tfoot className="bg-zinc-50 dark:bg-zinc-800/60 border-t border-zinc-200 dark:border-zinc-700">
-                                <tr>
-                                    <td colSpan={3} className="px-3 py-2.5 text-right font-semibold text-sm">Total:</td>
-                                    <td className="px-3 py-2.5 text-right font-bold text-base font-mono">{fmt(invoice.totalAmount)}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                                    {invoice.items.map((item) => (
+                                        <tr key={item.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40">
+                                            <td className="px-4 py-3">{item.description}</td>
+                                            <td className="px-4 py-3 text-right font-mono">{Number(item.quantity)}</td>
+                                            <td className="px-4 py-3 text-right font-mono">{fmt(item.unitPrice)}</td>
+                                            <td className="px-4 py-3 text-right font-mono font-medium">{fmt(item.amount)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot className="bg-zinc-50 dark:bg-zinc-800/60 border-t border-zinc-200 dark:border-zinc-700">
+                                    <tr>
+                                        <td colSpan={3} className="px-4 py-3 text-right font-bold text-sm">Total Tagihan:</td>
+                                        <td className="px-4 py-3 text-right font-bold text-base font-mono text-zinc-900 dark:text-zinc-100">{fmt(invoice.totalAmount)}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="sm:hidden space-y-3">
+                            <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-2 border-b pb-2">Rincian Item</h4>
+                            {invoice.items.map((item) => (
+                                <div key={item.id} className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex flex-col gap-2">
+                                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">{item.description}</span>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-zinc-500">{Number(item.quantity)} x {fmt(item.unitPrice)}</span>
+                                        <span className="font-bold font-mono text-zinc-900 dark:text-zinc-100">{fmt(item.amount)}</span>
+                                    </div>
+                                </div>
+                            ))}
+                            <div className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 text-emerald-900 dark:text-emerald-300">
+                                <span className="font-bold">Total Tagihan</span>
+                                <span className="font-bold font-mono text-lg">{fmt(invoice.totalAmount)}</span>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Payment Progress */}
@@ -352,14 +376,14 @@ function InvoiceDetail({ invoice, accounts, onClose, onPayment }: {
                     )}
                 </div>
 
-                {/* Footer */}
+                {/* Footer Sticky Action */}
                 {['UNPAID', 'PARTIAL', 'OVERDUE'].includes(invoice.status) && (
-                    <div className="p-6 border-t border-zinc-100 dark:border-zinc-800 sticky bottom-0 bg-white dark:bg-zinc-900">
+                    <div className="p-4 sm:p-6 mt-auto border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 sticky bottom-0 z-10 w-full shadow-[0_-10px_10px_-10px_rgba(0,0,0,0.05)]">
                         <Button
                             onClick={onPayment}
-                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white gap-2 min-h-[48px] text-base font-semibold"
                         >
-                            <Banknote className="h-4 w-4" />
+                            <Banknote className="h-5 w-5" />
                             Catat Pembayaran
                         </Button>
                     </div>

@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 import { deepSerialize } from '@/lib/serialize';
+import { COA_TEMPLATES } from '@/constants/coa-templates';
+import { AccountType } from '@prisma/client';
 
 // =================== ZOD SCHEMAS ===================
 
@@ -134,6 +136,11 @@ export async function createAccount(formData: AccountFormData): Promise<ActionRe
     });
     if (exists) return { success: false, error: `Kode akun "${code}" sudah digunakan` };
 
+    // Validation Guard: user mencoba memasukkan kode '4000' untuk 'Beban'
+    if (code === '4000' && type === 'EXPENSE') {
+        return { success: false, error: 'Kode 4000 tidak bisa digunakan untuk jenis akun Beban (umumnya untuk Pendapatan)' };
+    }
+
     // Validate parent exists and is HEADER
     if (parentId) {
         const parent = await prisma.account.findFirst({
@@ -192,6 +199,11 @@ export async function updateAccount(
     });
     if (dupCode) return { success: false, error: `Kode akun "${code}" sudah digunakan` };
 
+    // Validation Guard: user mencoba memasukkan kode '4000' untuk 'Beban'
+    if (code === '4000' && type === 'EXPENSE') {
+        return { success: false, error: 'Kode 4000 tidak bisa digunakan untuk jenis akun Beban (umumnya untuk Pendapatan)' };
+    }
+
     const account = await prisma.account.update({
         where: { id },
         data: { code, name, type, category, parentId: parentId || null, initialBalance, description },
@@ -236,4 +248,70 @@ export async function updateOpeningBalance(
     await prisma.account.update({ where: { id }, data: { initialBalance: balance } });
     revalidatePath('/dashboard/bagan-akun');
     return { success: true, data: undefined, message: 'Saldo awal berhasil diperbarui' };
+}
+
+export async function getNextAvailableCode(typeStr: string): Promise<ActionResult<{ code: string }>> {
+    const session = await getSession();
+    if (!session) return { success: false, error: 'Sesi tidak valid' };
+
+    const type = typeStr as AccountType;
+    let prefix = '1';
+    let baseNumber = 1000;
+    switch (type) {
+        case 'ASSET': prefix = '1'; baseNumber = 1000; break;
+        case 'LIABILITY': prefix = '2'; baseNumber = 2000; break;
+        case 'EQUITY': prefix = '3'; baseNumber = 3000; break;
+        case 'REVENUE': prefix = '4'; baseNumber = 4000; break;
+        case 'EXPENSE': prefix = '5'; baseNumber = 5000; break;
+    }
+
+    const lastAccount = await prisma.account.findFirst({
+        where: {
+            tenantId: session.tenantId,
+            code: { startsWith: prefix }
+        },
+        orderBy: { code: 'desc' },
+    });
+
+    if (!lastAccount) {
+        return { success: true, data: { code: baseNumber.toString() }, message: '' };
+    }
+
+    const lastNumMatch = lastAccount.code.match(/\d+/);
+    if (lastNumMatch && lastAccount.code === lastNumMatch[0]) {
+        const nextNum = parseInt(lastNumMatch[0], 10) + 1;
+        return { success: true, data: { code: nextNum.toString() }, message: '' };
+    }
+
+    return { success: true, data: { code: baseNumber.toString() }, message: '' };
+}
+
+export async function seedTenantCoa(tenantId: string, category: string): Promise<ActionResult> {
+    const session = await getSession();
+    if (!session || session.tenantId !== tenantId) return { success: false, error: 'Sesi tidak valid' };
+
+    const count = await prisma.account.count({
+        where: { tenantId: session.tenantId },
+    });
+
+    if (count > 0) {
+        return { success: false, error: 'Template hanya bisa digunakan saat Bagan Akun masih kosong' };
+    }
+
+    const templateData = COA_TEMPLATES[category];
+    if (!templateData) {
+        return { success: false, error: 'Template tidak ditemukan' };
+    }
+
+    const payload = templateData.map((tpl) => ({
+        ...tpl,
+        tenantId: session.tenantId,
+    }));
+
+    await prisma.account.createMany({
+        data: payload,
+    });
+
+    revalidatePath('/dashboard/bagan-akun');
+    return { success: true, data: undefined, message: `Template standar (${category}) berhasil diterapkan` };
 }

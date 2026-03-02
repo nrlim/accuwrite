@@ -1,20 +1,22 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Plus, RefreshCw, Search, DollarSign } from 'lucide-react';
+import { Plus, RefreshCw, Search, DollarSign, Briefcase, Truck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { COATree, type Account } from '@/components/accounting/coa-tree';
 import { AccountFormModal } from '@/components/accounting/account-form-modal';
 import { OpeningBalanceModal } from '@/components/accounting/opening-balance-modal';
-import { getAccounts } from '@/actions/account.actions';
+import { getAccounts, seedTenantCoa } from '@/actions/account.actions';
+import { showNotification } from '@/hooks/use-notification';
 
 interface COAPageClientProps {
     initialAccounts: Account[];
+    tenantId: string;
 }
 
-export function COAPageClient({ initialAccounts }: COAPageClientProps) {
+export function COAPageClient({ initialAccounts, tenantId }: COAPageClientProps) {
     const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [search, setSearch] = useState('');
@@ -61,6 +63,19 @@ export function COAPageClient({ initialAccounts }: COAPageClientProps) {
     const handleOpenBulkBalance = () => {
         setObPreselected(null);
         setIsOBOpen(true);
+    };
+
+    // ── Template handler ──────────────────────────────────────
+    const handleApplyTemplate = async (category: string) => {
+        setIsRefreshing(true);
+        const result = await seedTenantCoa(tenantId, category);
+        if (result.success) {
+            showNotification(result.message, 'success');
+            await refresh();
+        } else {
+            showNotification(result.error, 'error');
+        }
+        setIsRefreshing(false);
     };
 
     // ── Search / Stats ────────────────────────────────────────
@@ -134,14 +149,16 @@ export function COAPageClient({ initialAccounts }: COAPageClientProps) {
                         <DollarSign className="h-4 w-4" />
                         Set Opening Balance
                     </Button>
-                    <Button
-                        onClick={() => handleAdd()}
-                        size="sm"
-                        className="gap-2 bg-brand-600 hover:bg-brand-700 text-white"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Tambah Akun
-                    </Button>
+                    {totalAccounts > 0 && (
+                        <Button
+                            onClick={() => handleAdd()}
+                            size="sm"
+                            className="gap-2 bg-brand-600 hover:bg-brand-700 text-white"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Tambah Akun
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -203,32 +220,113 @@ export function COAPageClient({ initialAccounts }: COAPageClientProps) {
                 </motion.div>
             )}
 
-            {/* ── Search ── */}
-            <div className="relative">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
-                <Input
-                    placeholder="Cari akun berdasarkan kode atau nama..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9 text-sm"
-                />
-            </div>
+            {/* ── Empty State vs Content ── */}
+            {totalAccounts === 0 ? (
+                <div className="flex flex-col items-center justify-center p-8 md:p-12 text-center rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm relative overflow-hidden">
+                    {/* Background decorations */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
-            {/* ── COA Tree ── */}
-            <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4"
-            >
-                <COATree
-                    accounts={filteredAccounts}
-                    onAdd={handleAdd}
-                    onEdit={handleEdit}
-                    onSetBalance={handleSetBalance}
-                    onRefresh={refresh}
-                />
-            </motion.div>
+                    <div className="bg-brand-50 dark:bg-brand-900/20 p-4 rounded-full mb-6 relative z-10 border border-brand-100 dark:border-brand-800">
+                        <Plus className="h-8 w-8 text-brand-600 dark:text-brand-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-2 relative z-10">Bagan Akun Kosong</h2>
+                    <p className="text-zinc-500 max-w-md mb-8 relative z-10">
+                        Pilih template yang paling sesuai dengan jenis usaha Anda untuk setup instan, atau buat daftar akun dari awal secara manual.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl relative z-10 mb-8">
+                        {/* Template Umum */}
+                        <div
+                            onClick={() => !isRefreshing && handleApplyTemplate('umum')}
+                            className={`group relative flex flex-col items-start p-6 rounded-xl border-2 transition-all cursor-pointer text-left
+                                ${isRefreshing ? 'opacity-50 cursor-not-allowed border-zinc-200 dark:border-zinc-800' : 'border-zinc-200 dark:border-zinc-800 hover:border-brand-500 hover:shadow-md bg-white dark:bg-zinc-900 hover:bg-brand-50/50 dark:hover:bg-brand-900/10'}`}
+                        >
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg group-hover:bg-brand-100 group-hover:text-brand-600 transition-colors">
+                                    <Briefcase className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-zinc-900 dark:text-zinc-100">Template Umum</h3>
+                                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">Rekomendasi</span>
+                                </div>
+                            </div>
+                            <p className="text-sm text-zinc-500 flex-1">
+                                Struktur standar untuk usaha jasa dan dagang umum. Termasuk Kas, Piutang, Hutang, Modal, dan Pendapatan Jasa.
+                            </p>
+                            <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 w-full flex justify-between items-center text-sm font-medium text-brand-600 dark:text-brand-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span>Gunakan Template</span>
+                                <span>&rarr;</span>
+                            </div>
+                        </div>
+
+                        {/* Template Logistik */}
+                        <div
+                            onClick={() => !isRefreshing && handleApplyTemplate('logistik')}
+                            className={`group relative flex flex-col items-start p-6 rounded-xl border-2 transition-all cursor-pointer text-left
+                                ${isRefreshing ? 'opacity-50 cursor-not-allowed border-zinc-200 dark:border-zinc-800' : 'border-zinc-200 dark:border-zinc-800 hover:border-blue-500 hover:shadow-md bg-white dark:bg-zinc-900 hover:bg-blue-50/50 dark:hover:bg-blue-900/10'}`}
+                        >
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="p-2.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-lg group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                                    <Truck className="w-6 h-6" />
+                                </div>
+                                <h3 className="font-bold text-zinc-900 dark:text-zinc-100">Template Logistik</h3>
+                            </div>
+                            <p className="text-sm text-zinc-500 flex-1">
+                                Disesuaikan untuk bisnis ekspedisi dan kargo. Termasuk akun Beban Kendaraan, Gaji Kurir, dan Pendapatan Pengiriman.
+                            </p>
+                            <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 w-full flex justify-between items-center text-sm font-medium text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span>Gunakan Template</span>
+                                <span>&rarr;</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="relative z-10 flex items-center gap-4 text-sm text-zinc-500">
+                        <span className="w-12 h-px bg-zinc-200 dark:bg-zinc-700"></span>
+                        <span>Atau buat sendiri</span>
+                        <span className="w-12 h-px bg-zinc-200 dark:bg-zinc-700"></span>
+                    </div>
+
+                    <Button
+                        onClick={() => handleAdd()}
+                        variant="ghost"
+                        className="mt-4 text-zinc-600 dark:text-zinc-400 hover:text-brand-600 dark:hover:text-brand-400"
+                    >
+                        Buat Akun Manual Secara Spesifik
+                    </Button>
+
+                </div>
+            ) : (
+                <>
+                    {/* ── Search ── */}
+                    <div className="relative">
+                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
+                        <Input
+                            placeholder="Cari akun berdasarkan kode atau nama..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="pl-9 text-sm"
+                        />
+                    </div>
+
+                    {/* ── COA Tree ── */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4"
+                    >
+                        <COATree
+                            accounts={filteredAccounts}
+                            onAdd={handleAdd}
+                            onEdit={handleEdit}
+                            onSetBalance={handleSetBalance}
+                            onRefresh={refresh}
+                        />
+                    </motion.div>
+                </>
+            )}
 
             {/* ── Account Form Modal ── */}
             <AccountFormModal
@@ -249,6 +347,6 @@ export function COAPageClient({ initialAccounts }: COAPageClientProps) {
                 onClose={() => setIsOBOpen(false)}
                 onSuccess={refresh}
             />
-        </div>
+        </div >
     );
 }

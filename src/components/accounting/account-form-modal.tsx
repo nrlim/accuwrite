@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { createAccount, updateAccount } from '@/actions/account.actions';
+import { createAccount, updateAccount, getNextAvailableCode } from '@/actions/account.actions';
 import { showNotification } from '@/hooks/use-notification';
 import { useLoading } from '@/hooks/use-loading';
 import type { Account } from './coa-tree';
@@ -40,6 +40,7 @@ export function AccountFormModal({
 }: AccountFormModalProps) {
     const [isPending, startTransition] = useTransition();
     const { startLoading, stopLoading } = useLoading();
+    const [isAutoGenerating, setIsAutoGenerating] = useState(false);
 
     const [form, setForm] = useState({
         code: '',
@@ -74,6 +75,24 @@ export function AccountFormModal({
             });
         }
     }, [mode, account, parentId, isOpen]);
+
+    useEffect(() => {
+        if (mode === 'create' && isOpen) {
+            let mounted = true;
+            const fetchNextCode = async () => {
+                setIsAutoGenerating(true);
+                const result = await getNextAvailableCode(form.type);
+                if (mounted && result.success) {
+                    setForm((prev) => ({ ...prev, code: result.data.code }));
+                }
+                if (mounted) setIsAutoGenerating(false);
+            };
+            fetchNextCode();
+            return () => {
+                mounted = false;
+            };
+        }
+    }, [form.type, mode, isOpen]);
 
     const headerAccounts = allAccounts.filter((a) => a.category === 'HEADER');
 
@@ -143,13 +162,17 @@ export function AccountFormModal({
                             {/* Code & Name */}
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="acc-code" className="text-xs font-medium">Kode Akun *</Label>
+                                    <Label htmlFor="acc-code" className="text-xs font-medium">
+                                        Kode Akun *
+                                        {isAutoGenerating && <span className="text-zinc-400 ml-2 animate-pulse">(Generating...)</span>}
+                                    </Label>
                                     <Input
                                         id="acc-code"
                                         value={form.code}
                                         onChange={(e) => setForm({ ...form, code: e.target.value })}
                                         placeholder="1000"
                                         className="font-mono text-sm"
+                                        disabled={isAutoGenerating}
                                         required
                                     />
                                 </div>

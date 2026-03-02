@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { getAccounts } from '@/actions/account.actions';
+import { getSession } from '@/lib/session';
 import { COAPageClient } from './page-client';
 
 export const metadata = {
@@ -24,6 +25,9 @@ function serializeAccount(acc: any): any {
 }
 
 export default async function COAPage() {
+    const session = await getSession();
+    if (!session) return null;
+
     const result = await getAccounts();
     const accounts = result.success
         ? result.data.map(serializeAccount)
@@ -31,7 +35,7 @@ export default async function COAPage() {
 
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <COAPageClient initialAccounts={accounts as any} />
+            <COAPageClient initialAccounts={accounts as any} tenantId={session.tenantId} />
         </Suspense>
     );
 }

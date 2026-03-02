@@ -102,43 +102,82 @@ function JournalEntryRow({ entry, onVoid }: { entry: JournalEntry; onVoid: (id: 
                         transition={{ duration: 0.2 }}
                         className="border-t border-zinc-100 dark:border-zinc-800"
                     >
-                        <table className="w-full text-xs">
-                            <thead>
-                                <tr className="bg-zinc-50 dark:bg-zinc-800/50">
-                                    <th className="text-left px-4 py-2 text-zinc-500 font-semibold uppercase">Akun</th>
-                                    <th className="text-left px-4 py-2 text-zinc-500 font-semibold uppercase">Memo</th>
-                                    <th className="text-right px-4 py-2 text-zinc-500 font-semibold uppercase">Debit</th>
-                                    <th className="text-right px-4 py-2 text-zinc-500 font-semibold uppercase">Kredit</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                                {entry.items.map((item) => (
-                                    <tr key={item.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
-                                        <td className="px-4 py-2.5">
-                                            <span className="font-mono text-xs font-medium text-zinc-500 mr-2">{item.account.code}</span>
-                                            <span>{item.account.name}</span>
-                                            {item.contact && <span className="text-zinc-400 ml-1">· {item.contact.name}</span>}
+                        <div className="hidden sm:block">
+                            <table className="w-full text-xs">
+                                <thead>
+                                    <tr className="bg-zinc-50 dark:bg-zinc-800/50">
+                                        <th className="text-left px-4 py-2 text-zinc-500 font-semibold uppercase">Akun</th>
+                                        <th className="text-left px-4 py-2 text-zinc-500 font-semibold uppercase">Memo</th>
+                                        <th className="text-right px-4 py-2 text-zinc-500 font-semibold uppercase">Debit</th>
+                                        <th className="text-right px-4 py-2 text-zinc-500 font-semibold uppercase">Kredit</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                                    {entry.items.map((item) => (
+                                        <tr key={item.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
+                                            <td className="px-4 py-2.5">
+                                                <span className="font-mono text-xs font-medium text-zinc-500 mr-2">{item.account.code}</span>
+                                                <span>{item.account.name}</span>
+                                                {item.contact && <span className="text-zinc-400 ml-1">· {item.contact.name}</span>}
+                                            </td>
+                                            <td className="px-4 py-2.5 text-zinc-500">{item.memo || '-'}</td>
+                                            <td className="px-4 py-2.5 text-right font-mono font-medium text-blue-600 dark:text-blue-400">
+                                                {Number(item.debit) > 0 ? fmt(item.debit) : '-'}
+                                            </td>
+                                            <td className="px-4 py-2.5 text-right font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                                                {Number(item.credit) > 0 ? fmt(item.credit) : '-'}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    <tr className="bg-zinc-50 dark:bg-zinc-800/50 font-bold border-t border-zinc-200 dark:border-zinc-700">
+                                        <td colSpan={2} className="px-4 py-2 text-xs text-zinc-500 uppercase">Total</td>
+                                        <td className="px-4 py-2 text-right font-mono text-blue-700 dark:text-blue-300">
+                                            {fmt(entry.items.reduce((s, i) => s + Number(i.debit), 0))}
                                         </td>
-                                        <td className="px-4 py-2.5 text-zinc-500">{item.memo || '-'}</td>
-                                        <td className="px-4 py-2.5 text-right font-mono font-medium text-blue-600 dark:text-blue-400">
-                                            {Number(item.debit) > 0 ? fmt(item.debit) : '-'}
-                                        </td>
-                                        <td className="px-4 py-2.5 text-right font-mono font-medium text-emerald-600 dark:text-emerald-400">
-                                            {Number(item.credit) > 0 ? fmt(item.credit) : '-'}
+                                        <td className="px-4 py-2 text-right font-mono text-emerald-700 dark:text-emerald-300">
+                                            {fmt(entry.items.reduce((s, i) => s + Number(i.credit), 0))}
                                         </td>
                                     </tr>
-                                ))}
-                                <tr className="bg-zinc-50 dark:bg-zinc-800/50 font-bold">
-                                    <td colSpan={2} className="px-4 py-2 text-xs text-zinc-500 uppercase">Total</td>
-                                    <td className="px-4 py-2 text-right font-mono text-blue-700 dark:text-blue-300">
-                                        {fmt(entry.items.reduce((s, i) => s + Number(i.debit), 0))}
-                                    </td>
-                                    <td className="px-4 py-2 text-right font-mono text-emerald-700 dark:text-emerald-300">
-                                        {fmt(entry.items.reduce((s, i) => s + Number(i.credit), 0))}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile view */}
+                        <div className="sm:hidden flex flex-col divide-y divide-zinc-100 dark:divide-zinc-800">
+                            {entry.items.map((item) => (
+                                <div key={item.id} className="p-3 bg-white dark:bg-zinc-900/50 flex flex-col gap-1.5">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex flex-col">
+                                            <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">
+                                                <span className="font-mono text-xs text-zinc-500 mr-1.5">{item.account.code}</span>
+                                                {item.account.name}
+                                            </span>
+                                            {item.contact && <span className="text-xs text-zinc-500">Knt: {item.contact.name}</span>}
+                                        </div>
+                                    </div>
+                                    {item.memo && <p className="text-xs text-zinc-500">{item.memo}</p>}
+                                    <div className="flex items-center justify-between text-sm py-1 border-t border-dashed mt-1">
+                                        {Number(item.debit) > 0 ? (
+                                            <div className="flex justify-between w-full">
+                                                <span className="text-zinc-500 text-xs">Debit</span>
+                                                <span className="font-mono font-bold text-blue-600 dark:text-blue-400">{fmt(item.debit)}</span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex justify-between w-full">
+                                                <span className="text-zinc-500 text-xs">Kredit</span>
+                                                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{fmt(item.credit)}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                            <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50 flex items-center justify-between border-t border-zinc-200 dark:border-zinc-700">
+                                <span className="font-semibold text-sm">Total</span>
+                                <span className="font-mono font-bold text-sm">
+                                    {fmt(entry.items.reduce((s, i) => s + Number(i.debit), 0))}
+                                </span>
+                            </div>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

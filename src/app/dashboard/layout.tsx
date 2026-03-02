@@ -193,8 +193,8 @@ export default function DashboardLayout({
                     <SidebarRail />
                 </Sidebar>
 
-                <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                    <header className="flex h-16 items-center gap-4 border-b bg-white dark:bg-zinc-900 px-6 shrink-0">
+                <main className="flex-1 flex flex-col min-w-0 overflow-hidden pb-16 md:pb-0">
+                    <header className="flex h-16 items-center gap-4 border-b bg-white dark:bg-zinc-900 px-4 md:px-6 shrink-0 sticky top-0 z-10">
                         <SidebarTrigger className="-ml-2" />
 
                         {/* Global Search */}
@@ -256,11 +256,61 @@ export default function DashboardLayout({
                         </div>
                     </header>
 
-                    <div className="flex-1 overflow-auto p-6 md:p-8">
-                        <div className="mx-auto max-w-6xl">
+                    <div className="flex-1 overflow-auto p-4 md:p-8 pt-6">
+                        <div className="mx-auto max-w-6xl w-full">
                             {children}
                         </div>
                     </div>
+
+                    {/* Mobile Bottom Navigation */}
+                    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-zinc-950 border-t flex items-center justify-around z-50 pb-safe">
+                        <a href="/dashboard" className={`flex flex-col items-center justify-center w-full h-full gap-1 ${pathname === '/dashboard' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'}`}>
+                            <LayoutDashboard className="h-5 w-5" />
+                            <span className="text-[10px] font-medium">Beranda</span>
+                        </a>
+                        <a href="/dashboard/piutang" className={`flex flex-col items-center justify-center w-full h-full gap-1 ${pathname === '/dashboard/piutang' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'}`}>
+                            <CreditCard className="h-5 w-5" />
+                            <span className="text-[10px] font-medium">Invoice</span>
+                        </a>
+                        <a href="/dashboard/jurnal" className={`flex flex-col items-center justify-center w-full h-full gap-1 ${pathname === '/dashboard/jurnal' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'}`}>
+                            <BookOpen className="h-5 w-5" />
+                            <span className="text-[10px] font-medium">Jurnal</span>
+                        </a>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button className="flex flex-col items-center justify-center w-full h-full gap-1 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 outline-none">
+                                    <Settings className="h-5 w-5" />
+                                    <span className="text-[10px] font-medium">Menu</span>
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 mb-2">
+                                <DropdownMenuLabel>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{tenantName}</span>
+                                        <span className="text-xs text-zinc-500 font-normal">{userName} ({userRole || 'Pengguna'})</span>
+                                    </div>
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => router.push('/dashboard/bagan-akun')} className="cursor-pointer">
+                                    <Layers className="mr-2 h-4 w-4" />
+                                    <span>Bagan Akun</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => router.push('/dashboard/kas-bank')} className="cursor-pointer">
+                                    <Landmark className="mr-2 h-4 w-4" />
+                                    <span>Kas & Bank</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => router.push('/dashboard/laporan')} className="cursor-pointer">
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    <span>Laporan</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer" onClick={handleLogout}>
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    <span>Keluar</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </nav>
                 </main>
             </div>
         </SidebarProvider>

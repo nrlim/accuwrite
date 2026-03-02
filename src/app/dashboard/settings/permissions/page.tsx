@@ -100,10 +100,10 @@ export default function PermissionsClient() {
 
     return (
         <div className="flex-1 space-y-4 pt-2">
-            <div className="flex items-center justify-between space-y-2">
+            <div className="flex flex-col sm:flex-row justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Pengaturan Hak Akses</h2>
-                    <p className="text-muted-foreground mt-2">
+                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Pengaturan Hak Akses</h2>
+                    <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
                         Atur visibilitas fitur dan hak akses untuk masing-masing tipe Staff pada organisasi Anda.
                     </p>
                 </div>
