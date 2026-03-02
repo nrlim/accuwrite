@@ -14,6 +14,7 @@ import {
     Layers,
     CreditCard,
     Landmark,
+    Activity,
 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { getMyPermissions } from '@/lib/actions/permission-actions';
@@ -88,6 +89,7 @@ const navGroups: NavGroup[] = [
         items: [
             { title: 'Manajemen Staf', url: '/dashboard/settings/users', icon: Users },
             { title: 'Pengaturan Hak Akses', url: '/dashboard/settings/permissions', icon: Settings },
+            { title: 'Integrasi & API', url: '/dashboard/settings/integrations', icon: Activity, roles: ['OWNER', 'ADMIN'] },
         ],
     },
 ];
@@ -244,6 +246,13 @@ export default function DashboardLayout({
                                         <DropdownMenuItem onClick={() => router.push('/dashboard/settings/users')} className="cursor-pointer">
                                             <Users className="mr-2 h-4 w-4" />
                                             <span>Manajemen Staf</span>
+                                        </DropdownMenuItem>
+                                    )}
+
+                                    {allowedUrls?.includes('/dashboard/settings/integrations') && (
+                                        <DropdownMenuItem onClick={() => router.push('/dashboard/settings/integrations')} className="cursor-pointer">
+                                            <Activity className="mr-2 h-4 w-4" />
+                                            <span>Integrasi & API</span>
                                         </DropdownMenuItem>
                                     )}
                                     <DropdownMenuSeparator />

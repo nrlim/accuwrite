@@ -21,10 +21,14 @@ model Tenant {
   journalEntries   JournalEntry[]
   cashTransactions CashTransaction[]
   bills            Bill[]
-  rolePermissions  RolePermission[]
+  mappingTables    MappingTable[]
+  integrationLogs  IntegrationLog[]
+  apiKeys          ApiKey[]
+  webhookConfigs   WebhookConfig[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  rolePermissions RolePermission[]
 
   @@map("tenants")
 }
@@ -47,23 +51,23 @@ model User {
 }
 
 enum Role {
-  OWNER         // Pemilik Usaha
-  ADMIN         // Administrator Sistem
-  MANAGER       // Manajer Keuangan
-  ACCOUNTANT    // Akuntan (Entri Jurnal, Buku Besar)
-  AUDITOR       // Auditor (Read-only / Reviewer)
-  STAFF         // Staf Umum (Akses terbatas)
+  OWNER // Pemilik Usaha
+  ADMIN // Administrator Sistem
+  MANAGER // Manajer Keuangan
+  ACCOUNTANT // Akuntan (Entri Jurnal, Buku Besar)
+  AUDITOR // Auditor (Read-only / Reviewer)
+  STAFF // Staf Umum (Akses terbatas)
 }
 
 // =================== ROLE PERMISSIONS ===================
 
 model RolePermission {
-  id        String   @id @default(cuid())
-  role      Role
-  features  String   // Disimpan sebagai JSON string / text dipisahkan koma
+  id       String @id @default(cuid())
+  role     Role
+  features String // Disimpan sebagai JSON string / text dipisahkan koma
 
-  tenantId  String   @map("tenant_id")
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String @map("tenant_id")
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -77,9 +81,9 @@ model RolePermission {
 
 model Account {
   id             String          @id @default(cuid())
-  code           String          // Nomor akun (unik per tenant)
-  name           String          // Nama akun
-  type           AccountType     // Jenis akun
+  code           String // Nomor akun (unik per tenant)
+  name           String // Nama akun
+  type           AccountType // Jenis akun
   category       AccountCategory @default(DETAIL)
   initialBalance Decimal         @default(0) @db.Decimal(15, 2)
   description    String?
@@ -96,6 +100,7 @@ model Account {
   cashTransactions    CashTransaction[] @relation("CashAccountTx")
   counterTransactions CashTransaction[] @relation("CounterAccountTx")
   billItems           BillItem[]
+  mappingTables       MappingTable[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -107,16 +112,16 @@ model Account {
 }
 
 enum AccountType {
-  ASSET       // Aset
-  LIABILITY   // Kewajiban/Hutang
-  EQUITY      // Modal
-  REVENUE     // Pendapatan
-  EXPENSE     // Beban
+  ASSET // Aset
+  LIABILITY // Kewajiban/Hutang
+  EQUITY // Modal
+  REVENUE // Pendapatan
+  EXPENSE // Beban
 }
 
 enum AccountCategory {
-  HEADER  // Akun induk (tidak bisa di-posting)
-  DETAIL  // Akun detail (bisa di-posting)
+  HEADER // Akun induk (tidak bisa di-posting)
+  DETAIL // Akun detail (bisa di-posting)
 }
 
 // =================== CONTACTS (CUSTOMERS & VENDORS) ===================
@@ -128,7 +133,7 @@ model Contact {
   email   String?
   phone   String?
   address String?
-  npwp    String?     // NPWP untuk Indonesia
+  npwp    String? // NPWP untuk Indonesia
 
   tenantId String @map("tenant_id")
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -147,9 +152,9 @@ model Contact {
 }
 
 enum ContactType {
-  CUSTOMER  // Pelanggan (untuk Piutang/AR)
-  VENDOR    // Pemasok (untuk Hutang/AP)
-  BOTH      // Keduanya
+  CUSTOMER // Pelanggan (untuk Piutang/AR)
+  VENDOR // Pemasok (untuk Hutang/AP)
+  BOTH // Keduanya
 }
 
 // =================== JOURNAL ENTRIES ===================
@@ -157,19 +162,19 @@ enum ContactType {
 model JournalEntry {
   id          String        @id @default(cuid())
   date        DateTime
-  reference   String        // Nomor referensi (INV-001, JV-001, dll)
+  reference   String // Nomor referensi (INV-001, JV-001, dll)
   description String
   status      JournalStatus @default(DRAFT)
   sourceType  String?       @map("source_type") // "INVOICE", "PAYMENT", "MANUAL"
-  sourceId    String?       @map("source_id")   // ID invoice/payment terkait
+  sourceId    String?       @map("source_id") // ID invoice/payment terkait
 
   tenantId String @map("tenant_id")
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  items            JournalItem[]
-  invoice          Invoice?         @relation("InvoiceJournal")
-  bill             Bill?            @relation("BillJournal")
-  cashTransaction  CashTransaction? @relation("CashJournal")
+  items           JournalItem[]
+  invoice         Invoice?         @relation("InvoiceJournal")
+  bill            Bill?            @relation("BillJournal")
+  cashTransaction CashTransaction? @relation("CashJournal")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -181,9 +186,9 @@ model JournalEntry {
 }
 
 enum JournalStatus {
-  DRAFT   // Belum final
-  POSTED  // Sudah diposting ke buku besar
-  VOID    // Dibatalkan
+  DRAFT // Belum final
+  POSTED // Sudah diposting ke buku besar
+  VOID // Dibatalkan
 }
 
 model JournalItem {
@@ -209,16 +214,17 @@ model JournalItem {
 // =================== INVOICES (ACCOUNTS RECEIVABLE) ===================
 
 model Invoice {
-  id          String        @id @default(cuid())
-  number      String        // Nomor invoice (INV-001)
-  date        DateTime
-  dueDate     DateTime      @map("due_date")
-  status      InvoiceStatus @default(UNPAID)
-  subtotal    Decimal       @db.Decimal(15, 2)
-  taxAmount   Decimal       @default(0) @map("tax_amount") @db.Decimal(15, 2)
-  totalAmount Decimal       @map("total_amount") @db.Decimal(15, 2)
-  paidAmount  Decimal       @default(0) @map("paid_amount") @db.Decimal(15, 2)
-  notes       String?
+  id             String        @id @default(cuid())
+  number         String // Nomor invoice (INV-001)
+  date           DateTime
+  dueDate        DateTime      @map("due_date")
+  status         InvoiceStatus @default(UNPAID)
+  idempotencyKey String?       @unique @map("idempotency_key")
+  subtotal       Decimal       @db.Decimal(15, 2)
+  taxAmount      Decimal       @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  totalAmount    Decimal       @map("total_amount") @db.Decimal(15, 2)
+  paidAmount     Decimal       @default(0) @map("paid_amount") @db.Decimal(15, 2)
+  notes          String?
 
   contactId String  @map("contact_id")
   contact   Contact @relation(fields: [contactId], references: [id])
@@ -238,16 +244,17 @@ model Invoice {
   @@index([tenantId])
   @@index([contactId])
   @@index([status, tenantId])
+  @@index([idempotencyKey])
   @@map("invoices")
 }
 
 enum InvoiceStatus {
-  DRAFT     // Draft belum dikirim
-  UNPAID    // Sudah dikirim, belum bayar
-  PARTIAL   // Bayar sebagian
-  PAID      // Lunas
-  OVERDUE   // Jatuh tempo belum bayar
-  VOID      // Dibatalkan
+  DRAFT // Draft belum dikirim
+  UNPAID // Sudah dikirim, belum bayar
+  PARTIAL // Bayar sebagian
+  PAID // Lunas
+  OVERDUE // Jatuh tempo belum bayar
+  VOID // Dibatalkan
 }
 
 model InvoiceItem {
@@ -268,12 +275,12 @@ model InvoiceItem {
 // =================== PAYMENTS ===================
 
 model Payment {
-  id            String   @id @default(cuid())
-  date          DateTime
-  amount        Decimal  @db.Decimal(15, 2)
-  method        String   // Transfer, Tunai, dll
-  reference     String?  // Nomor referensi pembayaran
-  notes         String?
+  id        String   @id @default(cuid())
+  date      DateTime
+  amount    Decimal  @db.Decimal(15, 2)
+  method    String // Transfer, Tunai, dll
+  reference String? // Nomor referensi pembayaran
+  notes     String?
 
   invoiceId String  @map("invoice_id")
   invoice   Invoice @relation(fields: [invoiceId], references: [id])
@@ -294,8 +301,8 @@ model CashTransaction {
   date        DateTime
   type        CashTxType // IN | OUT
   amount      Decimal    @db.Decimal(15, 2)
-  description String     // User-friendly description
-  reference   String?    // Nomor bukti / referensi bank
+  description String // User-friendly description
+  reference   String? // Nomor bukti / referensi bank
   notes       String?
 
   // Akun kas/bank yang terlibat (Kas, Bank BCA, dll)
@@ -332,15 +339,15 @@ model CashTransaction {
 }
 
 enum CashTxType {
-  IN   // Uang Masuk
-  OUT  // Uang Keluar
+  IN // Uang Masuk
+  OUT // Uang Keluar
 }
 
 // =================== BILLS (ACCOUNTS PAYABLE) ===================
 
 model Bill {
   id          String     @id @default(cuid())
-  number      String     // Nomor tagihan (BILL-001)
+  number      String // Nomor tagihan (BILL-001)
   date        DateTime
   dueDate     DateTime   @map("due_date")
   status      BillStatus @default(UNPAID)
@@ -375,12 +382,12 @@ model Bill {
 }
 
 enum BillStatus {
-  DRAFT    // Draft belum dikonfirmasi
-  UNPAID   // Belum dibayar
-  PARTIAL  // Bayar sebagian
-  PAID     // Lunas
-  OVERDUE  // Jatuh tempo belum bayar
-  VOID     // Dibatalkan
+  DRAFT // Draft belum dikonfirmasi
+  UNPAID // Belum dibayar
+  PARTIAL // Bayar sebagian
+  PAID // Lunas
+  OVERDUE // Jatuh tempo belum bayar
+  VOID // Dibatalkan
 }
 
 model BillItem {
@@ -406,8 +413,8 @@ model BillPayment {
   id        String   @id @default(cuid())
   date      DateTime
   amount    Decimal  @db.Decimal(15, 2)
-  method    String   // Transfer, Tunai, dll
-  reference String?  // Nomor referensi
+  method    String // Transfer, Tunai, dll
+  reference String? // Nomor referensi
   notes     String?
 
   billId String @map("bill_id")
@@ -420,4 +427,86 @@ model BillPayment {
   @@index([billId])
   @@index([tenantId])
   @@map("bill_payments")
+}
+
+// =================== INTEGRATION & MAPPING ===================
+
+model MappingTable {
+  id          String  @id @default(cuid())
+  sourceSys   String // e.g., "TruXos"
+  sourceCat   String // e.g., "Solar"
+  targetAccId String  @map("target_acc_id")
+  account     Account @relation(fields: [targetAccId], references: [id])
+  tenantId    String  @map("tenant_id")
+  tenant      Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sourceSys, sourceCat, tenantId])
+  @@index([tenantId])
+  @@map("mapping_tables")
+}
+
+model IntegrationLog {
+  id           String    @id @default(cuid())
+  system       String // e.g., "TruXos Webhook"
+  endpoint     String
+  status       LogStatus
+  requestData  String?   @db.Text
+  responseData String?   @db.Text
+  errorMessage String?   @db.Text
+  tenantId     String    @map("tenant_id")
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("integration_logs")
+}
+
+enum LogStatus {
+  SUCCESS
+  FAILED
+}
+
+// =================== API & SECURITY ===================
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  name       String // e.g., "TruXos Integration"
+  key        String    @unique // Hashed or masked key snippet for display
+  secret     String // Hashed secret key
+  lastUsedAt DateTime? @map("last_used_at")
+  expiresAt  DateTime? @map("expires_at")
+  isActive   Boolean   @default(true) @map("is_active")
+
+  tenantId String @map("tenant_id")
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([key])
+  @@map("api_keys")
+}
+
+model WebhookConfig {
+  id       String  @id @default(cuid())
+  name     String // e.g., "Invoice Webhook"
+  url      String // https://truxos.com/webhook/accuwrite
+  secret   String // Secret used for HMAC signing
+  events   String // JSON array or comma separated, e.g., 'invoice.created, invoice.paid'
+  isActive Boolean @default(true) @map("is_active")
+
+  tenantId String @map("tenant_id")
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("webhook_configs")
 }
