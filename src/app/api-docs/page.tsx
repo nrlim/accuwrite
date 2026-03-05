@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { CopyButton } from '@/components/ui/copy-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Terminal, Shield, Webhook, FileText, Users, BookOpen, Activity, AlertCircle, RefreshCw } from 'lucide-react';
+import { Terminal, Shield, Webhook, FileText, Users, BookOpen, Activity, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 function CodeBlock({ title, code, language = 'json' }: { title?: string, code: string, language?: string }) {
@@ -18,7 +18,7 @@ function CodeBlock({ title, code, language = 'json' }: { title?: string, code: s
                     <CopyButton text={code} className="h-6 w-6 text-zinc-400 hover:text-white" />
                 </div>
             )}
-            <div className="p-4 overflow-x-auto relative group">
+            <div className={`p-4 overflow-x-auto relative group language-${language}`}>
                 <pre className="text-[13px] leading-6 font-mono text-zinc-300">
                     <code>{code}</code>
                 </pre>
@@ -134,6 +134,14 @@ export default function ApiDocumentationPage() {
                             <ul className="space-y-1">
                                 <li><a href="#list-contacts" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">List all Contacts</a></li>
                                 <li><a href="#create-contact" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Create a Contact</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2 flex items-center gap-2">
+                                <FileText className="h-4 w-4" /> Accounts API
+                            </h4>
+                            <ul className="space-y-1">
+                                <li><a href="#list-accounts" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">List all Accounts</a></li>
                             </ul>
                         </div>
                     </nav>
@@ -481,6 +489,71 @@ app.post('/webhook/accuwrite', (req, res) => {
                     </div>
 
                     <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800 my-16"></div>
+
+                    {/* SECTION: ACCOUNTS API */}
+                    <SectionHeading id="list-accounts" title="Accounts API" icon={BookOpen} />
+                    <div className="grid lg:grid-cols-2 gap-10">
+                        <div>
+                            <h3 className="text-2xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 mb-4 flex items-center group">
+                                List all Accounts
+                                <a href="#list-accounts" className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-500 transition-opacity ml-2">#</a>
+                            </h3>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Tarik data seluruh akun (Chart of Accounts) di Accuwrite. Berguna untuk sinkronisasi pemetaan kategori transaksi/dropdown dengan sistem eksternal secara dinamis tanpa hardcode.
+                            </p>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-200 uppercase tracking-widest font-bold">GET</Badge>
+                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/v1/accounts</code>
+                            </div>
+
+                            <SubHeading id="account-query-params" title="Query Parameters" />
+                            <ParamTable rows={[
+                                { name: 'type', type: 'string', req: false, desc: 'Filter berdasarkan kelompok tipe akun (Multiple tipe pisahkan dengan koma). Contoh: "ASSET,EXPENSE" atau "REVENUE".' },
+                                { name: 'category', type: 'string', req: false, desc: 'Filter hierarki akun ("HEADER" atau "DETAIL"). Default: "DETAIL".' },
+                                { name: 'q', type: 'string', req: false, desc: 'Pencarian kata kunci (nama akun atau kode akun).' },
+                            ]} />
+                        </div>
+                        <div className="space-y-6">
+                            <CodeBlock
+                                title="REQUEST (GET /v1/accounts?type=ASSET,EXPENSE&q=bank)"
+                                code={`curl -G https://api.accuwrite.id/v1/accounts \\
+  -d "type=ASSET,EXPENSE" \\
+  -d "q=bank" \\
+  -H "X-Accuwrite-Api-Key: sk_xxx" \\
+  -H "X-Accuwrite-Api-Secret: sec_yyy"`}
+                                language="bash"
+                            />
+                            <CodeBlock
+                                title="RESPONSE (200 OK)"
+                                code={`{
+  "status": "success",
+  "accounts": [
+    {
+      "id": "cuid_xyz_001",
+      "name": "100-200 Bank BCA",
+      "type": "ASSET",
+      "category": "DETAIL",
+      "code": "100-200",
+      "originalName": "Bank BCA"
+    },
+    {
+      "id": "cuid_xyz_002",
+      "name": "100-201 Bank Mandiri",
+      "type": "ASSET",
+      "category": "DETAIL",
+      "code": "100-201",
+      "originalName": "Bank Mandiri"
+    }
+  ],
+  "meta": {
+    "count": 2
+  }
+}`}
+                                language="json"
+                            />
+                        </div>
+                    </div>
 
                     {/* SECTION: CONTACTS API */}
                     <SectionHeading id="list-contacts" title="Contacts API" icon={Users} />
