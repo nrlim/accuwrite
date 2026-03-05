@@ -103,6 +103,7 @@ export default function ApiDocumentationPage() {
                             <ul className="space-y-1">
                                 <li><a href="#intro" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Introduction</a></li>
                                 <li><a href="#authentication" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Authentication</a></li>
+                                <li><a href="#verify" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Verify Connection</a></li>
                                 <li><a href="#errors" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Errors & Status Codes</a></li>
                             </ul>
                         </div>
@@ -200,6 +201,42 @@ export default function ApiDocumentationPage() {
   -H "Content-Type: application/json" \\
   -H "X-Accuwrite-Api-Key: sk_d8f79a2...328f"`}
                                 language="bash"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid lg:grid-cols-2 gap-10 mt-16" id="verify">
+                        <div>
+                            <h3 className="text-2xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 mb-4 flex items-center group">
+                                Verify Connection (Ping)
+                                <a href="#verify" className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-500 transition-opacity ml-2">#</a>
+                            </h3>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Endpoint ringan untuk mengetes apakah URL tujuan (Base URL) serta pasangan <strong>API Key & Secret</strong> yang Anda tanam di Client telah valid dan terkoneksi pada Tenant/Aplikasi yang benar.
+                            </p>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-200 uppercase tracking-widest font-bold">GET</Badge>
+                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/v1/verify</code>
+                            </div>
+                        </div>
+                        <div className="space-y-6">
+                            <CodeBlock
+                                title="REQUEST (GET /v1/verify)"
+                                code={`curl -G https://api.accuwrite.id/v1/verify \\
+  -H "X-Accuwrite-Api-Key: sk_xxx"`}
+                                language="bash"
+                            />
+                            <CodeBlock
+                                title="RESPONSE (200 OK)"
+                                code={`{
+  "status": "success",
+  "connected": true,
+  "message": "Successfully connected to Accuwrite API.",
+  "app_name": "Integrasi TruXos",
+  "tenant_name": "PT Transportasi Lintas Nusantara"
+}`}
+                                language="json"
                             />
                         </div>
                     </div>
