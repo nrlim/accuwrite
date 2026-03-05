@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import { integrationQueue } from '@/lib/queue';
+import { verifyApiAuth } from '@/lib/apiAuth';
 
 export async function POST(req: Request) {
     try {
+        const auth = await verifyApiAuth(req);
+        if (auth.error) {
+            return NextResponse.json({ error: auth.error }, { status: auth.status });
+        }
+
         const idempotencyKey = req.headers.get('idempotency-key');
 
         if (!idempotencyKey) {
@@ -15,15 +21,15 @@ export async function POST(req: Request) {
         const payload = await req.json();
 
         // Verify it isn't completely invalid payload
-        if (!payload.tenantId || !payload.contactId || !payload.amount) {
+        if (!payload.contactId || !payload.amount) {
             return NextResponse.json(
                 { error: 'Invalid payload: missing required fields' },
                 { status: 400 }
             );
         }
 
-        // Attach idempotencyKey to payload if the worker depends on it
-        const jobData = { ...payload, idempotencyKey };
+        // Attach idempotencyKey and tenantId to payload
+        const jobData = { ...payload, idempotencyKey, tenantId: auth.tenantId };
 
         // Enqueue job with the idempotency key as jobId to prevent duplicate enqueues
         const job = await integrationQueue.add('process-invoice', jobData, {
@@ -35,8 +41,8 @@ export async function POST(req: Request) {
             jobId: job.id,
         }, { status: 202 });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error queuing invoice:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
     }
 }

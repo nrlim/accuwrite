@@ -1,37 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
+import { verifyApiAuth } from '@/lib/apiAuth';
 
 export async function GET(req: Request) {
     try {
-        // Retrieve credentials from headers
-        const apiKey = req.headers.get('x-api-key');
-        const apiSecret = req.headers.get('x-api-secret');
-
-        if (!apiKey || !apiSecret) {
-            return NextResponse.json(
-                { error: 'Missing API Key or API Secret in headers' },
-                { status: 401 }
-            );
+        // Retrieve credentials and verify
+        const auth = await verifyApiAuth(req);
+        if (auth.error) {
+            return NextResponse.json({ error: auth.error }, { status: auth.status });
         }
 
-        // Verify API credentials
-        const validKey = await prisma.apiKey.findFirst({
-            where: {
-                key: apiKey,
-                secret: apiSecret,
-                isActive: true,
-            },
-        });
-
-        if (!validKey) {
-            return NextResponse.json(
-                { error: 'Invalid API credentials' },
-                { status: 401 }
-            );
-        }
-
-        const tenantId = validKey.tenantId;
+        const tenantId = auth.tenantId!;
 
         // Parse query parameters
         const { searchParams } = new URL(req.url);
