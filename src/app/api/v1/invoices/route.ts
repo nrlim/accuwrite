@@ -9,7 +9,15 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: auth.error }, { status: auth.status });
         }
 
-        const idempotencyKey = req.headers.get('idempotency-key');
+        let idempotencyKey = req.headers.get('idempotency-key');
+        const payload = await req.json();
+
+        // Fallback for TruXos / Trucking integration which might send manifestNumber instead of number
+        if (payload.manifestNumber) {
+            payload.number = payload.number || payload.manifestNumber;
+            // Provide a default idempotency key from manifest number if header is missing
+            idempotencyKey = idempotencyKey || payload.manifestNumber;
+        }
 
         if (!idempotencyKey) {
             return NextResponse.json(
@@ -18,12 +26,10 @@ export async function POST(req: Request) {
             );
         }
 
-        const payload = await req.json();
-
         // Verify it isn't completely invalid payload
         if (!payload.contactId || !payload.amount) {
             return NextResponse.json(
-                { error: 'Invalid payload: missing required fields' },
+                { error: 'Invalid payload: missing required fields (contactId, amount)' },
                 { status: 400 }
             );
         }

@@ -16,6 +16,13 @@ export interface TruXosInvoiceData {
 }
 
 export async function processInvoiceJob(data: TruXosInvoiceData) {
+    // Provide sensible defaults for trucking integrations that might omit some fields
+    const safeSourceSys = data.sourceSys || 'TruXos';
+    const safeCategory = data.category || 'General';
+    const safeDate = data.date ? new Date(data.date) : new Date();
+    const safeDueDate = data.dueDate ? new Date(data.dueDate) : safeDate;
+    const safeDescription = data.description || `Delivery Manifest: ${data.number || 'N/A'}`;
+
     // Check Idempotency Key
     const existingInvoice = await prisma.invoice.findUnique({
         where: { idempotencyKey: data.idempotencyKey },
@@ -30,8 +37,8 @@ export async function processInvoiceJob(data: TruXosInvoiceData) {
     const mapping = await prisma.mappingTable.findUnique({
         where: {
             sourceSys_sourceCat_tenantId: {
-                sourceSys: data.sourceSys,
-                sourceCat: data.category,
+                sourceSys: safeSourceSys,
+                sourceCat: safeCategory,
                 tenantId: data.tenantId,
             },
         },
@@ -42,7 +49,7 @@ export async function processInvoiceJob(data: TruXosInvoiceData) {
         targetAccountId = mapping.targetAccId;
     } else {
         // If no specific mapping, we might fall back to a default account or log warning
-        console.warn(`No mapping found for ${data.sourceSys} - ${data.category}.`);
+        console.warn(`No mapping found for ${safeSourceSys} - ${safeCategory}.`);
     }
 
     // Use a transaction to ensure all or nothing
@@ -51,9 +58,9 @@ export async function processInvoiceJob(data: TruXosInvoiceData) {
         const newInvoice = await tx.invoice.create({
             data: {
                 idempotencyKey: data.idempotencyKey,
-                number: data.number,
-                date: new Date(data.date),
-                dueDate: new Date(data.dueDate),
+                number: data.number || data.idempotencyKey,
+                date: safeDate,
+                dueDate: safeDueDate,
                 subtotal: data.amount,
                 totalAmount: data.amount,
                 tenantId: data.tenantId,
@@ -65,7 +72,7 @@ export async function processInvoiceJob(data: TruXosInvoiceData) {
         await tx.invoiceItem.create({
             data: {
                 invoiceId: newInvoice.id,
-                description: data.description,
+                description: safeDescription,
                 quantity: 1,
                 unitPrice: data.amount,
                 amount: data.amount,
@@ -76,9 +83,9 @@ export async function processInvoiceJob(data: TruXosInvoiceData) {
         if (targetAccountId) {
             const je = await tx.journalEntry.create({
                 data: {
-                    date: new Date(data.date),
+                    date: safeDate,
                     reference: newInvoice.number,
-                    description: `Integration: ${data.description}`,
+                    description: `Integration: ${safeDescription}`,
                     sourceType: "INVOICE",
                     sourceId: newInvoice.id,
                     tenantId: data.tenantId,
@@ -109,7 +116,7 @@ export async function processInvoiceJob(data: TruXosInvoiceData) {
     // Log successful integration
     await prisma.integrationLog.create({
         data: {
-            system: `Process Invoice: ${data.sourceSys}`,
+            system: `Process Invoice: ${safeSourceSys}`,
             endpoint: 'Background Worker',
             status: 'SUCCESS',
             requestData: JSON.stringify(data),

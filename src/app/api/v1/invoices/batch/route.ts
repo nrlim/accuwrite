@@ -9,7 +9,14 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: auth.error }, { status: auth.status });
         }
 
-        const idempotencyKey = req.headers.get('idempotency-key');
+        let idempotencyKey = req.headers.get('idempotency-key');
+        const payload = await req.json();
+
+        // Fallback for TruXos / Trucking integration: 
+        // Some systems might not set the idempotency-key header but include it in the payload or first item.
+        if (!idempotencyKey) {
+            idempotencyKey = payload.idempotencyKey || (Array.isArray(payload.items) && payload.items[0]?.manifestNumber);
+        }
 
         if (!idempotencyKey) {
             return NextResponse.json(
@@ -18,14 +25,20 @@ export async function POST(req: Request) {
             );
         }
 
-        const payload = await req.json();
-
         if (!Array.isArray(payload.items)) {
             return NextResponse.json(
                 { error: 'Invalid payload: "items" must be an array' },
                 { status: 400 }
             );
         }
+
+        // Map manifestNumber to number for compatibility
+        payload.items.forEach((item: any) => {
+            if (item.manifestNumber) {
+                item.number = item.number || item.manifestNumber;
+                item.idempotencyKey = item.idempotencyKey || item.manifestNumber;
+            }
+        });
 
         // Attach tenantId to all items
         const itemsWithTenant = payload.items.map((item: Record<string, unknown>) => ({
