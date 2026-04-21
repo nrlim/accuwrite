@@ -1,3 +1,5 @@
+"use client";
+
 import { Badge } from '@/components/ui/badge';
 import { CopyButton } from '@/components/ui/copy-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -110,21 +112,38 @@ export default function ApiDocumentationPage() {
 
                         <div>
                             <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2 flex items-center gap-2">
-                                <Webhook className="h-4 w-4" /> Webhooks
-                            </h4>
-                            <ul className="space-y-1">
-                                <li><a href="#webhooks-overview" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Overview & Security</a></li>
-                                <li><a href="#webhooks-events" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Event Types</a></li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2 flex items-center gap-2">
                                 <FileText className="h-4 w-4" /> Invoices API
                             </h4>
                             <ul className="space-y-1">
                                 <li><a href="#create-invoice" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Create an Invoice</a></li>
                                 <li><a href="#batch-invoices" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Create Batch Invoices</a></li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2 flex items-center gap-2">
+                                <FileText className="h-4 w-4" /> Expenses API
+                            </h4>
+                            <ul className="space-y-1">
+                                <li><a href="#create-expense" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Post Expense (Bill)</a></li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2 flex items-center gap-2">
+                                <Activity className="h-4 w-4" /> Cash & Bank API
+                            </h4>
+                            <ul className="space-y-1">
+                                <li><a href="#create-cash-tx" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Post Transaction</a></li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2 flex items-center gap-2">
+                                <Shield className="h-4 w-4" /> Payments API
+                            </h4>
+                            <ul className="space-y-1">
+                                <li><a href="#create-payment" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Record Payment (AR)</a></li>
                             </ul>
                         </div>
 
@@ -137,12 +156,23 @@ export default function ApiDocumentationPage() {
                                 <li><a href="#create-contact" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Create a Contact</a></li>
                             </ul>
                         </div>
+
                         <div>
                             <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2 flex items-center gap-2">
                                 <FileText className="h-4 w-4" /> Accounts API
                             </h4>
                             <ul className="space-y-1">
                                 <li><a href="#list-accounts" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">List all Accounts</a></li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-3 px-2 flex items-center gap-2">
+                                <Webhook className="h-4 w-4" /> Webhooks
+                            </h4>
+                            <ul className="space-y-1">
+                                <li><a href="#webhooks-overview" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Overview & Security</a></li>
+                                <li><a href="#webhooks-events" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Event Types</a></li>
                             </ul>
                         </div>
                     </nav>
@@ -280,6 +310,462 @@ export default function ApiDocumentationPage() {
 
                     <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800 my-16"></div>
 
+
+                    {/* SECTION: INVOICES API */}
+                    <SectionHeading id="create-invoice" title="Create an Invoice" icon={FileText} />
+                    <div className="grid lg:grid-cols-2 gap-10">
+                        <div>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Membuat invoice *Customer* secara asinkron. Direkomendasikan digunakan ketika *Driver TruXos* selesai melakukan *Delivery* barang, sehingga Jurnal Piutang akan dicatat secara mendatar di belakang layar (Background Queue).
+                            </p>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 uppercase tracking-widest font-bold">POST</Badge>
+                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/integrations/invoices</code>
+                            </div>
+
+                            <SubHeading id="invoice-headers" title="Headers Tambahan" />
+                            <ParamTable rows={[
+                                { name: 'Idempotency-Key', type: 'string', req: true, desc: 'UUID unik (v4) untuk mencegah duplikasi (karena limitasi network retry/double click).' }
+                            ]} />
+
+                            <SubHeading id="invoice-params" title="Body Parameters" />
+                            <ParamTable rows={[
+                                { name: 'sourceSys', type: 'string', req: true, desc: 'Nama aplikasi pembuat. (Contoh: "TruXos")' },
+                                { name: 'contactId', type: 'string', req: true, desc: 'ID Customer/Kontak yang valid dari sistem Accuwrite.' },
+                                { name: 'number', type: 'string', req: true, desc: 'Nomor nota dari third-party. (Maksimal 50 Karakter).' },
+                                { name: 'date', type: 'datetime', req: true, desc: 'Tanggal dikeluarkannya Invoice (Format ISO8601).' },
+                                { name: 'amount', type: 'decimal', req: true, desc: 'Total jumlah nominal tagihan (Numerik murni).' },
+                                { name: 'category', type: 'string', req: false, desc: 'Kategori tagihan ("Solar", "Sewa"). Akan otomatis di-map ke Chart of Account.' },
+                                { name: 'description', type: 'string', req: false, desc: 'Keterangan Memo invoice secara jelas.' },
+                            ]} />
+                        </div>
+                        <div className="space-y-6">
+                            <CodeBlock
+                                title="REQUEST (POST /api/integrations/invoices)"
+                                code={`{
+  "sourceSys": "TruXos",
+  "contactId": "cmrd5fa...",
+  "number": "TRX-10992",
+  "date": "2026-03-03T00:00:00Z",
+  "dueDate": "2026-03-10T00:00:00Z",
+  "category": "Solar",
+  "amount": 15000000.00,
+  "description": "Bahan Bakar Hino B1921VX"
+}`}
+                                language="json"
+                            />
+                            <CodeBlock
+                                title="RESPONSE (202 Accepted)"
+                                code={`{
+  "status": "success",
+  "message": "Job successfully queued.",
+  "data": {
+    "jobId": "23bd1-49a3-b293-1acb",
+    "idempotencyKey": "uniq-request-xyz"
+  }
+}`}
+                                language="json"
+                            />
+                        </div>
+                    </div>
+
+                    {/* SECTION: BATCH INVOICES API */}
+                    <div className="grid lg:grid-cols-2 gap-10 mt-16" id="batch-invoices">
+                        <div>
+                            <h3 className="text-2xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 mb-4 flex items-center group">
+                                Create Batch Invoices
+                                <a href="#batch-invoices" className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-500 transition-opacity ml-2">#</a>
+                            </h3>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Memasukkan beberapa Invoice atau mem-_batch_ pengiriman *daily report*. Sangat berguna jika sistem integrasi hanya mengirimkan rekapitulasi data sekali dalam sehari (via CRON). Limit maksimal: 100 Invoice per *request*.
+                            </p>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 uppercase tracking-widest font-bold">POST</Badge>
+                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/integrations/invoices/batch</code>
+                            </div>
+
+                            <SubHeading id="batch-invoice-params" title="Body Parameters" />
+                            <ParamTable rows={[
+                                { name: 'items', type: 'array', req: true, desc: 'Array berisi daftar 1-100 objek invoice.' },
+                                { name: 'items[].idempotencyKey', type: 'string', req: true, desc: 'Kunci idempotensi per transaksi (Misalnya: ID Unik Delivery dari TruXos).' },
+                                { name: '...', type: 'object', req: false, desc: 'Semua variabel _Invoice biasa_ harus disertakan dalam tiap block array item.' },
+                            ]} />
+                        </div>
+                        <div className="space-y-6">
+                            <CodeBlock
+                                title="REQUEST (POST /api/integrations/invoices/batch)"
+                                code={`{
+                                    "items": [
+                                        {
+                                        "idempotencyKey": "dlv-00122",
+                                        "sourceSys": "TruXos",
+                                        "contactId": "cuid...",
+                                        "number": "TRX-10992",
+                                        "date": "2026-03-03T00:00:00Z",
+                                        "amount": 15000000.00
+                                        },
+                                        {
+                                        "idempotencyKey": "dlv-00123",
+                                        "sourceSys": "TruXos",
+                                        "contactId": "cuid...",
+                                        "number": "TRX-10993",
+                                        "date": "2026-03-03T00:00:00Z",
+                                        "amount": 1800000.00
+                                        }
+                                    ]
+                                    }`}
+                                language="json" />
+                        </div>
+                    </div>
+
+                    <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800 my-16"></div>
+
+                    {/* SECTION: EXPENSES API */}
+                    <SectionHeading id="create-expense" title="Expenses API" icon={FileText} />
+                    <div className="grid lg:grid-cols-2 gap-10">
+                        <div>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Mencatat biaya operasional (BBM, Service, Sparepart) secara otomatis dari sistem TruXos ke dalam sistem akuntansi Accuwrite sebagai <strong>Bill (Hutang Vendor)</strong>.
+                            </p>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Data yang dikirim akan melalui antrean Background Job untuk memastikan konsistensi jurnal keuangan.
+                            </p>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 uppercase tracking-widest font-bold">POST</Badge>
+                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/integrations/expenses</code>
+                            </div>
+
+                            <SubHeading id="expense-headers" title="Headers Tambahan" />
+                            <ParamTable rows={[
+                                { name: 'Idempotency-Key', type: 'string', req: true, desc: 'UUID unik (v4) untuk mencegah duplikasi biaya yang sama.' }
+                            ]} />
+
+                            <SubHeading id="expense-params" title="Body Parameters" />
+                            <ParamTable rows={[
+                                { name: 'sourceSys', type: 'string', req: true, desc: 'Nama aplikasi pembuat. (Contoh: "TruXos")' },
+                                { name: 'vendorId', type: 'string', req: true, desc: 'ID Vendor/Supplier dari Accuwrite (Gunakan Contacts API untuk mencari ID).' },
+                                { name: 'number', type: 'string', req: true, desc: 'Nomor nota/manifest operasional.' },
+                                { name: 'date', type: 'datetime', req: true, desc: 'Tanggal pengeluaran (Format ISO8601).' },
+                                { name: 'amount', type: 'decimal', req: true, desc: 'Total nominal biaya.' },
+                                { name: 'category', type: 'string', req: true, desc: 'Kategori biaya ("Solar", "Service", "Toll"). Ini akan di-map ke Account ID di menu Integrasi.' },
+                                { name: 'description', type: 'string', req: false, desc: 'Keterangan tambahan biaya.' },
+                            ]} />
+                        </div>
+                        <div className="space-y-6">
+                            <CodeBlock
+                                title="REQUEST (POST /api/integrations/expenses)"
+                                code={`{
+  "sourceSys": "TruXos",
+  "vendorId": "cmrd5fa...",
+  "number": "MF-90011",
+  "date": "2026-03-05T08:00:00Z",
+  "category": "Solar",
+  "amount": 2500000.00,
+  "description": "Pengisian BBM Solar - Hino B1921VX"
+}`}
+                                language="json"
+                            />
+                            <CodeBlock
+                                title="RESPONSE (202 Accepted)"
+                                code={`{
+  "status": "success",
+  "message": "Expense record queued.",
+  "data": {
+    "jobId": "exp_882abc-9921",
+    "idempotencyKey": "manifest-mf-90011"
+  }
+}`}
+                                language="json"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800 my-16"></div>
+
+                    {/* SECTION: CASH BANK API */}
+                    <SectionHeading id="create-cash-tx" title="Cash & Bank API" icon={Activity} />
+                    <div className="grid lg:grid-cols-2 gap-10">
+                        <div>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Sinkronisasi transaksi Kas atau Bank secara otomatis (misalnya dari Bank Feed atau Petty Cash eksternal).
+                            </p>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 uppercase tracking-widest font-bold">POST</Badge>
+                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/integrations/cash-bank</code>
+                            </div>
+
+                            <SubHeading id="cash-headers" title="Headers" />
+                            <ParamTable rows={[
+                                { name: 'Idempotency-Key', type: 'string', req: true, desc: 'Mencegah duplikasi transaksi yang sama.' }
+                            ]} />
+
+                            <SubHeading id="cash-params" title="Body Parameters" />
+                            <ParamTable rows={[
+                                { name: 'sourceSys', type: 'string', req: true, desc: 'Nama sistem (Contoh: "BCA Feed").' },
+                                { name: 'cashAccountId', type: 'string', req: true, desc: 'ID Akun Kas/Bank di Accuwrite.' },
+                                { name: 'counterAccountId', type: 'string', req: true, desc: 'ID Akun Lawan (e.g. Pendapatan, Beban, atau Piutang).' },
+                                { name: 'type', type: 'string', req: true, desc: '"IN" (Masuk) atau "OUT" (Keluar).' },
+                                { name: 'amount', type: 'decimal', req: true, desc: 'Nominal transaksi.' },
+                                { name: 'date', type: 'datetime', req: true, desc: 'ISO8601 Date.' },
+                                { name: 'reference', type: 'string', req: false, desc: 'Nomor referensi bank/kuitansi.' },
+                                { name: 'description', type: 'string', req: true, desc: 'Keterangan transaksi.' },
+                            ]} />
+                        </div>
+                        <div className="space-y-6">
+                            <CodeBlock
+                                title="REQUEST (POST /api/integrations/cash-bank)"
+                                code={`{
+  "sourceSys": "BCA Feed",
+  "cashAccountId": "acc_bank_001",
+  "counterAccountId": "acc_rev_002",
+  "type": "IN",
+  "amount": 5000000.00,
+  "date": "2026-03-05T10:00:00Z",
+  "reference": "CRD-9901",
+  "description": "Transfer Masuk Room 101"
+}`}
+                                language="json"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800 my-16"></div>
+
+                    {/* SECTION: PAYMENTS API */}
+                    <SectionHeading id="create-payment" title="Payments API" icon={Shield} />
+                    <div className="grid lg:grid-cols-2 gap-10">
+                        <div>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Mencatat pelunasan Invoice secara otomatis dari Payment Gateway (Midtrans, Xendit, dll).
+                            </p>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 uppercase tracking-widest font-bold">POST</Badge>
+                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/integrations/payments</code>
+                            </div>
+
+                            <SubHeading id="payment-params" title="Body Parameters" />
+                            <ParamTable rows={[
+                                { name: 'invoiceId', type: 'string', req: true, desc: 'ID Invoice yang akan dibayar.' },
+                                { name: 'cashAccountId', type: 'string', req: true, desc: 'ID Akun Kas/Bank tempat dana diterima.' },
+                                { name: 'amount', type: 'decimal', req: true, desc: 'Jumlah pembayaran.' },
+                                { name: 'method', type: 'string', req: true, desc: 'Metode (e.g. "Midtrans", "Transfer").' },
+                                { name: 'reference', type: 'string', req: false, desc: 'ID Transaksi dari Gateway.' },
+                            ]} />
+                        </div>
+                        <div className="space-y-6">
+                            <CodeBlock
+                                title="REQUEST (POST /api/integrations/payments)"
+                                code={`{
+  "invoiceId": "inv_abc123",
+  "cashAccountId": "acc_bca_99",
+  "amount": 15000000.00,
+  "method": "Midtrans",
+  "reference": "MID-PAY-99211"
+}`}
+                                language="json"
+                            />
+                        </div>
+                    </div>                    {/* SECTION: CONTACTS API */}
+                    <SectionHeading id="list-contacts" title="Contacts API" icon={Users} />
+                    <div className="grid lg:grid-cols-2 gap-10">
+                        <div>
+                            <h3 className="text-2xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 mb-4 flex items-center group">
+                                List all Contacts
+                                <a href="#list-contacts" className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-500 transition-opacity ml-2">#</a>
+                            </h3>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Tarik data seluruh koneksi (Pelanggan atau Supplier) untuk melakukan sinkronisasi dengan Database eksternal. Secara bawaan (default), endpoint ini membawa paginasi.
+                            </p>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-200 uppercase tracking-widest font-bold">GET</Badge>
+                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/v1/contacts</code>
+                            </div>
+
+                            <SubHeading id="contact-query-params" title="Query Parameters" />
+                            <ParamTable rows={[
+                                { name: 'type', type: 'string', req: false, desc: 'Filter jenis kontak: "CUSTOMER", "VENDOR", atau "BOTH".' },
+                                { name: 'page', type: 'integer', req: false, desc: 'Nomor halaman untuk *Pagination* (Default: 1).' },
+                                { name: 'limit', type: 'integer', req: false, desc: 'Jumlah baris per halaman (Maksimal: 100).' },
+                                { name: 'search', type: 'string', req: false, desc: 'Pencarian sebagian teks (menggunakan ILIKE pada nama/email).' },
+                            ]} />
+                        </div>
+                        <div className="space-y-6">
+                            <CodeBlock
+                                title="REQUEST (GET /v1/contacts?type=CUSTOMER&limit=2)"
+                                code={`curl -G https://api.accuwrite.id/v1/contacts \\
+  -d "type=CUSTOMER" \\
+  -d "limit=2" \\
+  -H "X-Accuwrite-Api-Key: sk_xxx"`}
+                                language="bash"
+                            />
+                            <CodeBlock
+                                title="RESPONSE (200 OK)"
+                                code={`{
+  "status": "success",
+  "data": [
+    {
+      "id": "cmrd5fa89000a2xqw9j7",
+      "name": "PT Transportasi Lintas Nusantara",
+      "type": "CUSTOMER",
+      "email": "finance@lintasnusantara.com",
+      "phone": "08119992019",
+      "address": "Jl. Gatot Subroto No 15. Jakarta",
+      "npwp": "01.234.567.8-091.000",
+      "createdAt": "2026-02-15T12:00:00Z"
+    },
+    {
+      "id": "cpz99xa1010b4kzmll01",
+      "name": "CV Abadi Megah Prima",
+      "type": "CUSTOMER",
+      "email": "info@abadimegah.id",
+      "phone": null,
+      "address": null,
+      "npwp": null,
+      "createdAt": "2026-02-28T09:12:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 2,
+    "totalCount": 145,
+    "totalPages": 73
+  }
+}`}
+                                language="json"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid lg:grid-cols-2 gap-10 mt-16" id="create-contact">
+                        <div>
+                            <h3 className="text-2xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 mb-4 flex items-center group">
+                                Create a Contact
+                                <a href="#create-contact" className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-500 transition-opacity ml-2">#</a>
+                            </h3>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Menambahkan data Pelanggan atau *Vendor* (Pemasok) baru dari CRM pihak ketiga secara _real-time_. (Operasi ini berlangsung Sinkron / Langsung direspon ID-nya).
+                            </p>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 uppercase tracking-widest font-bold">POST</Badge>
+                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/v1/contacts</code>
+                            </div>
+
+                            <SubHeading id="contact-create-params" title="Body Parameters" />
+                            <ParamTable rows={[
+                                { name: 'name', type: 'string', req: true, desc: 'Nama Perusahaan/Individu. Maks 100 Karakter.' },
+                                { name: 'type', type: 'string', req: true, desc: 'Enum: "CUSTOMER", "VENDOR", atau "BOTH".' },
+                                { name: 'email', type: 'string', req: false, desc: 'Alamat surel kontak yang valid untuk korespondensi.' },
+                                { name: 'phone', type: 'string', req: false, desc: 'Nomor telepon.' },
+                                { name: 'address', type: 'string', req: false, desc: 'Alamat lengkap domisili logistik.' },
+                                { name: 'npwp', type: 'string', req: false, desc: 'Nomor Pokok Wajib Pajak untuk Faktur Pajak.' },
+                            ]} />
+                        </div>
+                        <div className="space-y-6">
+                            <CodeBlock
+                                title="REQUEST (POST /v1/contacts)"
+                                code={`{
+  "name": "PT Tambang Berkah Jaya",
+  "type": "CUSTOMER",
+  "email": "finance@tambangberkah.com",
+  "phone": "+62811223344",
+  "address": "Site Office B2, Kalimantan",
+  "npwp": "99.001.293.1-022.000"
+}`}
+                                language="json"
+                            />
+                            <CodeBlock
+                                title="RESPONSE (201 Created)"
+                                code={`{
+  "status": "success",
+  "message": "Contact created successfully",
+  "data": {
+    "id": "new-cuid-992a...",
+    "name": "PT Tambang Berkah Jaya",
+    "type": "CUSTOMER",
+    "createdAt": "2026-03-03T03:30:15Z"
+  }
+}`}
+                                language="json"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800 my-16"></div>
+
+                    {/* SECTION: ACCOUNTS API */}
+                    <SectionHeading id="list-accounts" title="Accounts API" icon={BookOpen} />
+                    <div className="grid lg:grid-cols-2 gap-10">
+                        <div>
+                            <h3 className="text-2xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 mb-4 flex items-center group">
+                                List all Accounts
+                                <a href="#list-accounts" className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-500 transition-opacity ml-2">#</a>
+                            </h3>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Tarik data seluruh akun (Chart of Accounts) di Accuwrite. Berguna untuk sinkronisasi pemetaan kategori transaksi/dropdown dengan sistem eksternal secara dinamis tanpa hardcode.
+                            </p>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-200 uppercase tracking-widest font-bold">GET</Badge>
+                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/v1/accounts</code>
+                            </div>
+
+                            <SubHeading id="account-query-params" title="Query Parameters" />
+                            <ParamTable rows={[
+                                { name: 'type', type: 'string', req: false, desc: 'Filter berdasarkan kelompok tipe akun (Multiple tipe pisahkan dengan koma). Contoh: "ASSET,EXPENSE" atau "REVENUE".' },
+                                { name: 'category', type: 'string', req: false, desc: 'Filter hierarki akun ("HEADER" atau "DETAIL"). Default: "DETAIL".' },
+                                { name: 'q', type: 'string', req: false, desc: 'Pencarian kata kunci (nama akun atau kode akun).' },
+                            ]} />
+                        </div>
+                        <div className="space-y-6">
+                            <CodeBlock
+                                title="REQUEST (GET /v1/accounts?type=ASSET,EXPENSE&q=bank)"
+                                code={`curl -G https://api.accuwrite.id/v1/accounts \\
+  -d "type=ASSET,EXPENSE" \\
+  -d "q=bank" \\
+  -H "X-Accuwrite-Api-Key: sk_xxx" \\
+  -H "X-Accuwrite-Api-Secret: sec_yyy"`}
+                                language="bash"
+                            />
+                            <CodeBlock
+                                title="RESPONSE (200 OK)"
+                                code={`{
+  "status": "success",
+  "accounts": [
+    {
+      "id": "cuid_xyz_001",
+      "name": "100-200 Bank BCA",
+      "type": "ASSET",
+      "category": "DETAIL",
+      "code": "100-200",
+      "originalName": "Bank BCA"
+    },
+    {
+      "id": "cuid_xyz_002",
+      "name": "100-201 Bank Mandiri",
+      "type": "ASSET",
+      "category": "DETAIL",
+      "code": "100-201",
+      "originalName": "Bank Mandiri"
+    }
+  ],
+  "meta": {
+    "count": 2
+  }
+}`}
+                                language="json"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800 my-16"></div>
+
                     {/* SECTION: WEBHOOKS */}
                     <SectionHeading id="webhooks-overview" title="Menerima Webhooks" icon={Webhook} />
                     <div className="grid lg:grid-cols-2 gap-10">
@@ -411,312 +897,6 @@ app.post('/webhook/accuwrite', (req, res) => {
                                 />
                             </TabsContent>
                         </Tabs>
-                    </div>
-
-                    <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800 my-16"></div>
-
-                    {/* SECTION: INVOICES API */}
-                    <SectionHeading id="create-invoice" title="Create an Invoice" icon={FileText} />
-                    <div className="grid lg:grid-cols-2 gap-10">
-                        <div>
-                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
-                                Membuat invoice *Customer* secara asinkron. Direkomendasikan digunakan ketika *Driver TruXos* selesai melakukan *Delivery* barang, sehingga Jurnal Piutang akan dicatat secara mendatar di belakang layar (Background Queue).
-                            </p>
-
-                            <div className="flex items-center gap-2 mb-4">
-                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 uppercase tracking-widest font-bold">POST</Badge>
-                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/v1/invoices</code>
-                            </div>
-
-                            <SubHeading id="invoice-headers" title="Headers Tambahan" />
-                            <ParamTable rows={[
-                                { name: 'Idempotency-Key', type: 'string', req: true, desc: 'UUID unik (v4) untuk mencegah duplikasi (karena limitasi network retry/double click).' }
-                            ]} />
-
-                            <SubHeading id="invoice-params" title="Body Parameters" />
-                            <ParamTable rows={[
-                                { name: 'sourceSys', type: 'string', req: true, desc: 'Nama aplikasi pembuat. (Contoh: "TruXos")' },
-                                { name: 'contactId', type: 'string', req: true, desc: 'ID Customer/Kontak yang valid dari sistem Accuwrite.' },
-                                { name: 'number', type: 'string', req: true, desc: 'Nomor nota dari third-party. (Maksimal 50 Karakter).' },
-                                { name: 'date', type: 'datetime', req: true, desc: 'Tanggal dikeluarkannya Invoice (Format ISO8601).' },
-                                { name: 'amount', type: 'decimal', req: true, desc: 'Total jumlah nominal tagihan (Numerik murni).' },
-                                { name: 'category', type: 'string', req: false, desc: 'Kategori tagihan ("Solar", "Sewa"). Akan otomatis di-map ke Chart of Account.' },
-                                { name: 'description', type: 'string', req: false, desc: 'Keterangan Memo invoice secara jelas.' },
-                            ]} />
-                        </div>
-                        <div className="space-y-6">
-                            <CodeBlock
-                                title="REQUEST (POST /v1/invoices)"
-                                code={`{
-  "sourceSys": "TruXos",
-  "contactId": "cmrd5fa...",
-  "number": "TRX-10992",
-  "date": "2026-03-03T00:00:00Z",
-  "dueDate": "2026-03-10T00:00:00Z",
-  "category": "Solar",
-  "amount": 15000000.00,
-  "description": "Bahan Bakar Hino B1921VX"
-}`}
-                                language="json"
-                            />
-                            <CodeBlock
-                                title="RESPONSE (202 Accepted)"
-                                code={`{
-  "status": "success",
-  "message": "Job successfully queued.",
-  "data": {
-    "jobId": "23bd1-49a3-b293-1acb",
-    "idempotencyKey": "uniq-request-xyz"
-  }
-}`}
-                                language="json"
-                            />
-                        </div>
-                    </div>
-
-                    {/* SECTION: BATCH INVOICES API */}
-                    <div className="grid lg:grid-cols-2 gap-10 mt-16" id="batch-invoices">
-                        <div>
-                            <h3 className="text-2xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 mb-4 flex items-center group">
-                                Create Batch Invoices
-                                <a href="#batch-invoices" className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-500 transition-opacity ml-2">#</a>
-                            </h3>
-                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
-                                Memasukkan beberapa Invoice atau mem-_batch_ pengiriman *daily report*. Sangat berguna jika sistem integrasi hanya mengirimkan rekapitulasi data sekali dalam sehari (via CRON). Limit maksimal: 100 Invoice per *request*.
-                            </p>
-
-                            <div className="flex items-center gap-2 mb-4">
-                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 uppercase tracking-widest font-bold">POST</Badge>
-                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/v1/invoices/batch</code>
-                            </div>
-
-                            <SubHeading id="batch-invoice-params" title="Body Parameters" />
-                            <ParamTable rows={[
-                                { name: 'items', type: 'array', req: true, desc: 'Array berisi daftar 1-100 objek invoice.' },
-                                { name: 'items[].idempotencyKey', type: 'string', req: true, desc: 'Kunci idempotensi per transaksi (Misalnya: ID Unik Delivery dari TruXos).' },
-                                { name: '...', type: 'object', req: false, desc: 'Semua variabel _Invoice biasa_ harus disertakan dalam tiap block array item.' },
-                            ]} />
-                        </div>
-                        <div className="space-y-6">
-                            <CodeBlock
-                                title="REQUEST (POST /v1/invoices/batch)"
-                                code={`{
-  "items": [
-    {
-      "idempotencyKey": "dlv-00122",
-      "sourceSys": "TruXos",
-      "contactId": "cuid...",
-      "number": "TRX-10992",
-      "date": "2026-03-03T00:00:00Z",
-      "amount": 15000000.00
-    },
-    {
-      "idempotencyKey": "dlv-00123",
-      "sourceSys": "TruXos",
-      "contactId": "cuid...",
-      "number": "TRX-10993",
-      "date": "2026-03-03T00:00:00Z",
-      "amount": 1800000.00
-    }
-  ]
-}`}
-                                language="json"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800 my-16"></div>
-
-                    {/* SECTION: ACCOUNTS API */}
-                    <SectionHeading id="list-accounts" title="Accounts API" icon={BookOpen} />
-                    <div className="grid lg:grid-cols-2 gap-10">
-                        <div>
-                            <h3 className="text-2xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 mb-4 flex items-center group">
-                                List all Accounts
-                                <a href="#list-accounts" className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-500 transition-opacity ml-2">#</a>
-                            </h3>
-                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
-                                Tarik data seluruh akun (Chart of Accounts) di Accuwrite. Berguna untuk sinkronisasi pemetaan kategori transaksi/dropdown dengan sistem eksternal secara dinamis tanpa hardcode.
-                            </p>
-
-                            <div className="flex items-center gap-2 mb-4">
-                                <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-200 uppercase tracking-widest font-bold">GET</Badge>
-                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/v1/accounts</code>
-                            </div>
-
-                            <SubHeading id="account-query-params" title="Query Parameters" />
-                            <ParamTable rows={[
-                                { name: 'type', type: 'string', req: false, desc: 'Filter berdasarkan kelompok tipe akun (Multiple tipe pisahkan dengan koma). Contoh: "ASSET,EXPENSE" atau "REVENUE".' },
-                                { name: 'category', type: 'string', req: false, desc: 'Filter hierarki akun ("HEADER" atau "DETAIL"). Default: "DETAIL".' },
-                                { name: 'q', type: 'string', req: false, desc: 'Pencarian kata kunci (nama akun atau kode akun).' },
-                            ]} />
-                        </div>
-                        <div className="space-y-6">
-                            <CodeBlock
-                                title="REQUEST (GET /v1/accounts?type=ASSET,EXPENSE&q=bank)"
-                                code={`curl -G https://api.accuwrite.id/v1/accounts \\
-  -d "type=ASSET,EXPENSE" \\
-  -d "q=bank" \\
-  -H "X-Accuwrite-Api-Key: sk_xxx" \\
-  -H "X-Accuwrite-Api-Secret: sec_yyy"`}
-                                language="bash"
-                            />
-                            <CodeBlock
-                                title="RESPONSE (200 OK)"
-                                code={`{
-  "status": "success",
-  "accounts": [
-    {
-      "id": "cuid_xyz_001",
-      "name": "100-200 Bank BCA",
-      "type": "ASSET",
-      "category": "DETAIL",
-      "code": "100-200",
-      "originalName": "Bank BCA"
-    },
-    {
-      "id": "cuid_xyz_002",
-      "name": "100-201 Bank Mandiri",
-      "type": "ASSET",
-      "category": "DETAIL",
-      "code": "100-201",
-      "originalName": "Bank Mandiri"
-    }
-  ],
-  "meta": {
-    "count": 2
-  }
-}`}
-                                language="json"
-                            />
-                        </div>
-                    </div>
-
-                    {/* SECTION: CONTACTS API */}
-                    <SectionHeading id="list-contacts" title="Contacts API" icon={Users} />
-                    <div className="grid lg:grid-cols-2 gap-10">
-                        <div>
-                            <h3 className="text-2xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 mb-4 flex items-center group">
-                                List all Contacts
-                                <a href="#list-contacts" className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-500 transition-opacity ml-2">#</a>
-                            </h3>
-                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
-                                Tarik data seluruh koneksi (Pelanggan atau Supplier) untuk melakukan sinkronisasi dengan Database eksternal. Secara bawaan (default), endpoint ini membawa paginasi.
-                            </p>
-
-                            <div className="flex items-center gap-2 mb-4">
-                                <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-200 uppercase tracking-widest font-bold">GET</Badge>
-                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/v1/contacts</code>
-                            </div>
-
-                            <SubHeading id="contact-query-params" title="Query Parameters" />
-                            <ParamTable rows={[
-                                { name: 'type', type: 'string', req: false, desc: 'Filter jenis kontak: "CUSTOMER", "VENDOR", atau "BOTH".' },
-                                { name: 'page', type: 'integer', req: false, desc: 'Nomor halaman untuk *Pagination* (Default: 1).' },
-                                { name: 'limit', type: 'integer', req: false, desc: 'Jumlah baris per halaman (Maksimal: 100).' },
-                                { name: 'search', type: 'string', req: false, desc: 'Pencarian sebagian teks (menggunakan ILIKE pada nama/email).' },
-                            ]} />
-                        </div>
-                        <div className="space-y-6">
-                            <CodeBlock
-                                title="REQUEST (GET /v1/contacts?type=CUSTOMER&limit=2)"
-                                code={`curl -G https://api.accuwrite.id/v1/contacts \\
-  -d "type=CUSTOMER" \\
-  -d "limit=2" \\
-  -H "X-Accuwrite-Api-Key: sk_xxx"`}
-                                language="bash"
-                            />
-                            <CodeBlock
-                                title="RESPONSE (200 OK)"
-                                code={`{
-  "status": "success",
-  "data": [
-    {
-      "id": "cmrd5fa89000a2xqw9j7",
-      "name": "PT Transportasi Lintas Nusantara",
-      "type": "CUSTOMER",
-      "email": "finance@lintasnusantara.com",
-      "phone": "08119992019",
-      "address": "Jl. Gatot Subroto No 15. Jakarta",
-      "npwp": "01.234.567.8-091.000",
-      "createdAt": "2026-02-15T12:00:00Z"
-    },
-    {
-      "id": "cpz99xa1010b4kzmll01",
-      "name": "CV Abadi Megah Prima",
-      "type": "CUSTOMER",
-      "email": "info@abadimegah.id",
-      "phone": null,
-      "address": null,
-      "npwp": null,
-      "createdAt": "2026-02-28T09:12:00Z"
-    }
-  ],
-  "meta": {
-    "page": 1,
-    "limit": 2,
-    "totalCount": 145,
-    "totalPages": 73
-  }
-}`}
-                                language="json"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid lg:grid-cols-2 gap-10 mt-16" id="create-contact">
-                        <div>
-                            <h3 className="text-2xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 mb-4 flex items-center group">
-                                Create a Contact
-                                <a href="#create-contact" className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-500 transition-opacity ml-2">#</a>
-                            </h3>
-                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
-                                Menambahkan data Pelanggan atau *Vendor* (Pemasok) baru dari CRM pihak ketiga secara _real-time_. (Operasi ini berlangsung Sinkron / Langsung direspon ID-nya).
-                            </p>
-
-                            <div className="flex items-center gap-2 mb-4">
-                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 uppercase tracking-widest font-bold">POST</Badge>
-                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/v1/contacts</code>
-                            </div>
-
-                            <SubHeading id="contact-create-params" title="Body Parameters" />
-                            <ParamTable rows={[
-                                { name: 'name', type: 'string', req: true, desc: 'Nama Perusahaan/Individu. Maks 100 Karakter.' },
-                                { name: 'type', type: 'string', req: true, desc: 'Enum: "CUSTOMER", "VENDOR", atau "BOTH".' },
-                                { name: 'email', type: 'string', req: false, desc: 'Alamat surel kontak yang valid untuk korespondensi.' },
-                                { name: 'phone', type: 'string', req: false, desc: 'Nomor telepon.' },
-                                { name: 'address', type: 'string', req: false, desc: 'Alamat lengkap domisili logistik.' },
-                                { name: 'npwp', type: 'string', req: false, desc: 'Nomor Pokok Wajib Pajak untuk Faktur Pajak.' },
-                            ]} />
-                        </div>
-                        <div className="space-y-6">
-                            <CodeBlock
-                                title="REQUEST (POST /v1/contacts)"
-                                code={`{
-  "name": "PT Tambang Berkah Jaya",
-  "type": "CUSTOMER",
-  "email": "finance@tambangberkah.com",
-  "phone": "+62811223344",
-  "address": "Site Office B2, Kalimantan",
-  "npwp": "99.001.293.1-022.000"
-}`}
-                                language="json"
-                            />
-                            <CodeBlock
-                                title="RESPONSE (201 Created)"
-                                code={`{
-  "status": "success",
-  "message": "Contact created successfully",
-  "data": {
-    "id": "new-cuid-992a...",
-    "name": "PT Tambang Berkah Jaya",
-    "type": "CUSTOMER",
-    "createdAt": "2026-03-03T03:30:15Z"
-  }
-}`}
-                                language="json"
-                            />
-                        </div>
                     </div>
 
 

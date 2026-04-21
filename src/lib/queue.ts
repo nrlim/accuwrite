@@ -1,6 +1,9 @@
 import { Queue, Worker, Job } from 'bullmq';
 import { redis } from './redis';
 import { processInvoiceJob, processBatchInvoicesJob } from './invoiceProcessor';
+import { processExpenseJob } from './expenseProcessor';
+import { processCashTxJob } from './cashProcessor';
+import { processPaymentJob } from './paymentProcessor';
 import { sendWebhookJob } from './webhook';
 import { PrismaClient } from '@prisma/client';
 
@@ -40,6 +43,15 @@ if (!globalForWorker.worker) {
                 }
                 if (job.name === 'process-batch-invoices') {
                     return await processBatchInvoicesJob(job.data);
+                }
+                if (job.name === 'process-expense') {
+                    return await processExpenseJob(job.data);
+                }
+                if (job.name === 'process-cash-tx') {
+                    return await processCashTxJob(job.data);
+                }
+                if (job.name === 'process-payment') {
+                    return await processPaymentJob(job.data);
                 }
                 if (job.name === 'process-webhook') {
                     return await sendWebhookJob(job.data);
