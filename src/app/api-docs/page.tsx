@@ -126,6 +126,7 @@ export default function ApiDocumentationPage() {
                             </h4>
                             <ul className="space-y-1">
                                 <li><a href="#create-expense" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Post Expense (Bill)</a></li>
+                                <li><a href="#batch-expenses" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Create Batch Expenses</a></li>
                             </ul>
                         </div>
 
@@ -135,6 +136,7 @@ export default function ApiDocumentationPage() {
                             </h4>
                             <ul className="space-y-1">
                                 <li><a href="#create-cash-tx" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Post Transaction</a></li>
+                                <li><a href="#batch-cash-tx" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Batch Transactions</a></li>
                             </ul>
                         </div>
 
@@ -144,6 +146,7 @@ export default function ApiDocumentationPage() {
                             </h4>
                             <ul className="space-y-1">
                                 <li><a href="#create-payment" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Record Payment (AR)</a></li>
+                                <li><a href="#batch-payments" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Batch Payments</a></li>
                             </ul>
                         </div>
 
@@ -154,6 +157,7 @@ export default function ApiDocumentationPage() {
                             <ul className="space-y-1">
                                 <li><a href="#list-contacts" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">List all Contacts</a></li>
                                 <li><a href="#create-contact" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Create a Contact</a></li>
+                                <li><a href="#lookup-vendors" className="block px-2 py-1.5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50">Lookup Vendors</a></li>
                             </ul>
                         </div>
 
@@ -483,6 +487,79 @@ export default function ApiDocumentationPage() {
                         </div>
                     </div>
 
+                    {/* SECTION: BATCH EXPENSES API */}
+                    <div className="grid lg:grid-cols-2 gap-10 mt-16" id="batch-expenses">
+                        <div>
+                            <h3 className="text-2xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 mb-4 flex items-center group">
+                                Create Batch Expenses
+                                <a href="#batch-expenses" className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-500 transition-opacity ml-2">#</a>
+                            </h3>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Memasukkan beberapa pengeluaran secara bersamaan (bulk). Berguna untuk sinkronisasi sekumpulan pengeluaran sekaligus untuk satu laporan perjalanan. Limit maksimal: 50 Expenses per *request*.
+                            </p>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 uppercase tracking-widest font-bold">POST</Badge>
+                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/integrations/expenses/bulk</code>
+                            </div>
+
+                            <SubHeading id="batch-expense-params" title="Body Parameters" />
+                            <ParamTable rows={[
+                                { name: 'Array of Objects', type: 'array', req: true, desc: 'Array berisi daftar 1-50 objek pengeluaran (expense).' },
+                                { name: '[].idempotencyKey', type: 'string', req: true, desc: 'Kunci idempotensi per transaksi (opsional, jika tidak ada, number akan digunakan).' },
+                                { name: '[].vendorId', type: 'string', req: true, desc: 'ID Vendor/Supplier dari Accuwrite.' },
+                                { name: '[].number', type: 'string', req: true, desc: 'Nomor nota/manifest operasional.' },
+                                { name: '[].amount', type: 'decimal', req: true, desc: 'Total nominal biaya.' },
+                                { name: '[].category', type: 'string', req: true, desc: 'Kategori biaya ("Solar", "Service").' },
+                            ]} />
+                        </div>
+                        <div className="space-y-6">
+                            <CodeBlock
+                                title="REQUEST (POST /api/integrations/expenses/bulk)"
+                                code={`[
+  {
+    "sourceSys": "TruXos",
+    "vendorId": "cmrd5fa...",
+    "number": "MF-90011-SOLAR",
+    "date": "2026-03-05T08:00:00Z",
+    "category": "Solar",
+    "amount": 2500000.00
+  },
+  {
+    "sourceSys": "TruXos",
+    "vendorId": "cmrd5fa...",
+    "number": "MF-90011-SERVICE",
+    "date": "2026-03-05T09:00:00Z",
+    "category": "Service",
+    "amount": 500000.00
+  }
+]`}
+                                language="json" />
+                            <CodeBlock
+                                title="RESPONSE (201 Created atau 207 Multi-Status)"
+                                code={`{
+  "status": "success",
+  "message": "Processed 2 successful, 0 failed.",
+  "successful": [
+    {
+      "index": 0,
+      "status": "success",
+      "billId": "cuid_1",
+      "number": "MF-90011-SOLAR"
+    },
+    {
+      "index": 1,
+      "status": "success",
+      "billId": "cuid_2",
+      "number": "MF-90011-SERVICE"
+    }
+  ],
+  "failed": []
+}`}
+                                language="json" />
+                        </div>
+                    </div>
+
                     <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800 my-16"></div>
 
                     {/* SECTION: CASH BANK API */}
@@ -533,6 +610,52 @@ export default function ApiDocumentationPage() {
                         </div>
                     </div>
 
+                    {/* SECTION: BATCH CASH BANK API */}
+                    <div className="grid lg:grid-cols-2 gap-10 mt-16" id="batch-cash-tx">
+                        <div>
+                            <h3 className="text-2xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 mb-4 flex items-center group">
+                                Batch Transactions
+                                <a href="#batch-cash-tx" className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-500 transition-opacity ml-2">#</a>
+                            </h3>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Sinkronisasi sekumpulan transaksi Kas atau Bank sekaligus. Limit maksimal: 100 transaksi per *request*.
+                            </p>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 uppercase tracking-widest font-bold">POST</Badge>
+                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/integrations/cash-bank/batch</code>
+                            </div>
+
+                            <SubHeading id="batch-cash-params" title="Body Parameters" />
+                            <ParamTable rows={[
+                                { name: 'Array of Objects', type: 'array', req: true, desc: 'Array berisi daftar 1-100 objek transaksi.' },
+                                { name: '[].idempotencyKey', type: 'string', req: true, desc: 'Kunci idempotensi per transaksi.' },
+                                { name: '[].cashAccountId', type: 'string', req: true, desc: 'ID Akun Kas/Bank di Accuwrite.' },
+                                { name: '[].counterAccountId', type: 'string', req: true, desc: 'ID Akun Lawan (e.g. Pendapatan, Beban, atau Piutang).' },
+                                { name: '[].type', type: 'string', req: true, desc: '"IN" (Masuk) atau "OUT" (Keluar).' },
+                                { name: '[].amount', type: 'decimal', req: true, desc: 'Nominal transaksi.' },
+                            ]} />
+                        </div>
+                        <div className="space-y-6">
+                            <CodeBlock
+                                title="REQUEST (POST /api/integrations/cash-bank/batch)"
+                                code={`[
+  {
+    "sourceSys": "BCA Feed",
+    "cashAccountId": "acc_bank_001",
+    "counterAccountId": "acc_rev_002",
+    "type": "IN",
+    "amount": 5000000.00,
+    "date": "2026-03-05T10:00:00Z",
+    "reference": "CRD-9901",
+    "description": "Transfer Masuk Room 101",
+    "idempotencyKey": "tx-9901"
+  }
+]`}
+                                language="json" />
+                        </div>
+                    </div>
+
                     <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800 my-16"></div>
 
                     {/* SECTION: PAYMENTS API */}
@@ -570,7 +693,53 @@ export default function ApiDocumentationPage() {
                                 language="json"
                             />
                         </div>
-                    </div>                    {/* SECTION: CONTACTS API */}
+                    </div>
+
+                    {/* SECTION: BATCH PAYMENTS API */}
+                    <div className="grid lg:grid-cols-2 gap-10 mt-16" id="batch-payments">
+                        <div>
+                            <h3 className="text-2xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 mb-4 flex items-center group">
+                                Batch Payments
+                                <a href="#batch-payments" className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-500 transition-opacity ml-2">#</a>
+                            </h3>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Mencatat pelunasan beberapa Invoice sekaligus. Limit maksimal: 100 pembayaran per *request*.
+                            </p>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 uppercase tracking-widest font-bold">POST</Badge>
+                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/integrations/payments/batch</code>
+                            </div>
+
+                            <SubHeading id="batch-payment-params" title="Body Parameters" />
+                            <ParamTable rows={[
+                                { name: 'Array of Objects', type: 'array', req: true, desc: 'Array berisi daftar 1-100 objek pembayaran.' },
+                                { name: '[].idempotencyKey', type: 'string', req: true, desc: 'Kunci idempotensi per transaksi.' },
+                                { name: '[].invoiceId', type: 'string', req: true, desc: 'ID Invoice yang dibayar.' },
+                                { name: '[].cashAccountId', type: 'string', req: true, desc: 'ID Akun Kas/Bank tempat dana diterima.' },
+                                { name: '[].amount', type: 'decimal', req: true, desc: 'Jumlah pembayaran.' },
+                            ]} />
+                        </div>
+                        <div className="space-y-6">
+                            <CodeBlock
+                                title="REQUEST (POST /api/integrations/payments/batch)"
+                                code={`[
+  {
+    "invoiceId": "inv_abc123",
+    "cashAccountId": "acc_bca_99",
+    "amount": 15000000.00,
+    "method": "Midtrans",
+    "reference": "MID-PAY-99211",
+    "idempotencyKey": "pay-99211"
+  }
+]`}
+                                language="json" />
+                        </div>
+                    </div>                    
+
+                    <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800 my-16"></div>
+
+                    {/* SECTION: CONTACTS API */}
                     <SectionHeading id="list-contacts" title="Contacts API" icon={Users} />
                     <div className="grid lg:grid-cols-2 gap-10">
                         <div>
@@ -691,6 +860,54 @@ export default function ApiDocumentationPage() {
     "type": "CUSTOMER",
     "createdAt": "2026-03-03T03:30:15Z"
   }
+}`}
+                                language="json"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid lg:grid-cols-2 gap-10 mt-16" id="lookup-vendors">
+                        <div>
+                            <h3 className="text-2xl font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 mb-4 flex items-center group">
+                                Lookup Vendors
+                                <a href="#lookup-vendors" className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-blue-500 transition-opacity ml-2">#</a>
+                            </h3>
+                            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+                                Tarik data *Vendor* (Pemasok) secara spesifik untuk mempermudah pencarian (lookup) dari sistem ketiga sebelum melakukan POST Expenses. Limit paginasi ditetapkan ke 50 baris teratas.
+                            </p>
+
+                            <div className="flex items-center gap-2 mb-4">
+                                <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-200 uppercase tracking-widest font-bold">GET</Badge>
+                                <code className="font-mono text-zinc-900 dark:text-zinc-100">/api/integrations/vendors</code>
+                            </div>
+
+                            <SubHeading id="vendor-query-params" title="Query Parameters" />
+                            <ParamTable rows={[
+                                { name: 'search', type: 'string', req: false, desc: 'Pencarian sebagian teks (menggunakan ILIKE pada nama vendor).' },
+                            ]} />
+                        </div>
+                        <div className="space-y-6">
+                            <CodeBlock
+                                title="REQUEST (GET /api/integrations/vendors?search=pertamina)"
+                                code={`curl -G https://api.accuwrite.id/api/integrations/vendors \\
+  -d "search=pertamina" \\
+  -H "X-Accuwrite-Api-Key: sk_xxx"`}
+                                language="bash"
+                            />
+                            <CodeBlock
+                                title="RESPONSE (200 OK)"
+                                code={`{
+  "status": "success",
+  "data": [
+    {
+      "id": "vendor_cuid_123",
+      "name": "SPBU Pertamina 34-1234",
+      "email": null,
+      "phone": null,
+      "address": "Jl. Tol Jakarta",
+      "npwp": null
+    }
+  ]
 }`}
                                 language="json"
                             />
