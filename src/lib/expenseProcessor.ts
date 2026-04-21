@@ -10,6 +10,7 @@ export interface TruXosExpenseData {
     category: string;   // 'Solar', 'Maintenance', etc
     amount: number;
     description: string;
+    accountId?: string; // Optional direct mapping
 }
 
 export async function processExpenseJob(data: TruXosExpenseData) {
@@ -63,22 +64,25 @@ export async function processExpenseJob(data: TruXosExpenseData) {
         return billCandidate;
     }
 
-    // Find Mapping for the Category
-    const mapping = await prisma.mappingTable.findUnique({
-        where: {
-            sourceSys_sourceCat_tenantId: {
-                sourceSys: safeSourceSys,
-                sourceCat: safeCategory,
-                tenantId: data.tenantId,
+    let targetAccountId = data.accountId;
+
+    // If accountId is not provided in payload, find Mapping for the Category
+    if (!targetAccountId) {
+        const mapping = await prisma.mappingTable.findUnique({
+            where: {
+                sourceSys_sourceCat_tenantId: {
+                    sourceSys: safeSourceSys,
+                    sourceCat: safeCategory,
+                    tenantId: data.tenantId,
+                },
             },
-        },
-    });
+        });
 
-    if (!mapping) {
-        throw new Error(`No mapping found for system ${safeSourceSys} and category ${safeCategory}`);
+        if (!mapping) {
+            throw new Error(`No mapping found for system ${safeSourceSys} and category ${safeCategory}`);
+        }
+        targetAccountId = mapping.targetAccId;
     }
-
-    const targetAccountId = mapping.targetAccId;
 
     // Start transaction
     const result = await prisma.$transaction(async (tx) => {

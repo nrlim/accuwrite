@@ -11,6 +11,7 @@ export interface TruXosInvoiceData {
     category: string;   // 'Solar', 'Maintenance', etc
     amount: number;
     description: string;
+    accountId?: string; // Optional direct mapping
 }
 
 export async function processInvoiceJob(data: TruXosInvoiceData) {
@@ -31,23 +32,26 @@ export async function processInvoiceJob(data: TruXosInvoiceData) {
         return existingInvoice;
     }
 
-    // Find Mapping for the Category
-    const mapping = await prisma.mappingTable.findUnique({
-        where: {
-            sourceSys_sourceCat_tenantId: {
-                sourceSys: safeSourceSys,
-                sourceCat: safeCategory,
-                tenantId: data.tenantId,
-            },
-        },
-    });
+    let targetAccountId = data.accountId || null;
 
-    let targetAccountId = null;
-    if (mapping) {
-        targetAccountId = mapping.targetAccId;
-    } else {
-        // If no specific mapping, we might fall back to a default account or log warning
-        console.warn(`No mapping found for ${safeSourceSys} - ${safeCategory}.`);
+    if (!targetAccountId) {
+        // Find Mapping for the Category
+        const mapping = await prisma.mappingTable.findUnique({
+            where: {
+                sourceSys_sourceCat_tenantId: {
+                    sourceSys: safeSourceSys,
+                    sourceCat: safeCategory,
+                    tenantId: data.tenantId,
+                },
+            },
+        });
+
+        if (mapping) {
+            targetAccountId = mapping.targetAccId;
+        } else {
+            // If no specific mapping, we might fall back to a default account or log warning
+            console.warn(`No mapping found for ${safeSourceSys} - ${safeCategory}.`);
+        }
     }
 
     // Use a transaction to ensure all or nothing
