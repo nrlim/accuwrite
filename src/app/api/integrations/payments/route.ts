@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { integrationQueue } from '@/lib/queue';
+import { processPaymentJob } from '@/lib/paymentProcessor';
 import { verifyApiAuth } from '@/lib/apiAuth';
 
 export async function POST(req: Request) {
@@ -9,8 +9,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: auth.error }, { status: auth.status });
         }
 
-        const idempotencyKey = req.headers.get('idempotency-key');
+        let idempotencyKey = req.headers.get('idempotency-key');
         const payload = await req.json();
+
+        if (!payload || typeof payload !== 'object') {
+            return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+        }
+
+        // TruXos compatibility: fallback idempotency key from manifestNumber
+        if (payload.manifestNumber) {
+            idempotencyKey = idempotencyKey || payload.manifestNumber;
+        }
 
         if (!idempotencyKey) {
             return NextResponse.json(
@@ -19,7 +28,6 @@ export async function POST(req: Request) {
             );
         }
 
-        // Validation for Payment
         if (!payload.invoiceId || !payload.cashAccountId || !payload.amount) {
             return NextResponse.json(
                 { error: 'Missing required fields: invoiceId, cashAccountId, amount' },
@@ -27,19 +35,24 @@ export async function POST(req: Request) {
             );
         }
 
+        // Process synchronously (Vercel serverless — no Redis/BullMQ)
         const jobData = { ...payload, idempotencyKey, tenantId: auth.tenantId };
-
-        const job = await integrationQueue.add('process-payment', jobData, {
-            jobId: idempotencyKey,
-        });
+        const result = await processPaymentJob(jobData);
 
         return NextResponse.json({
             status: 'success',
-            message: 'Payment record queued.',
-            jobId: job.id
-        }, { status: 202 });
+            message: 'Payment processed successfully.',
+            paymentId: result.id,
+            idempotencyKey,
+        }, { status: 201 });
 
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        console.error('Error processing payment:', error);
+        const msg = error instanceof Error ? error.message : String(error);
+        const isConflict = typeof msg === 'string' && (msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('unique'));
+        return NextResponse.json(
+            { error: isConflict ? 'Duplicate record — payment already exists.' : msg },
+            { status: isConflict ? 409 : 500 }
+        );
     }
 }

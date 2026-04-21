@@ -5,12 +5,15 @@ import { verifyPassword, signToken } from "@/lib/auth";
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
+        if (!body || typeof body !== 'object') {
+            return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+        }
         const { username, password } = body;
 
         // Validation
-        if (!username || !password) {
+        if (!username || typeof username !== 'string' || !password || typeof password !== 'string') {
             return NextResponse.json(
-                { error: "Username and password are required." },
+                { error: "Username and password are required and must be valid text." },
                 { status: 400 }
             );
         }

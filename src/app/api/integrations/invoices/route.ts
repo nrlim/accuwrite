@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { integrationQueue } from '@/lib/queue';
+import { processInvoiceJob } from '@/lib/invoiceProcessor';
 import { verifyApiAuth } from '@/lib/apiAuth';
 
 export async function POST(req: Request) {
@@ -12,10 +12,13 @@ export async function POST(req: Request) {
         let idempotencyKey = req.headers.get('idempotency-key');
         const payload = await req.json();
 
-        // Fallback for TruXos / Trucking integration which might send manifestNumber instead of number
+        if (!payload || typeof payload !== 'object') {
+            return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+        }
+
+        // TruXos compatibility: fallback number and idempotency key from manifestNumber
         if (payload.manifestNumber) {
             payload.number = payload.number || payload.manifestNumber;
-            // Provide a default idempotency key from manifest number if header is missing
             idempotencyKey = idempotencyKey || payload.manifestNumber;
         }
 
@@ -26,7 +29,6 @@ export async function POST(req: Request) {
             );
         }
 
-        // Verify it isn't completely invalid payload
         if (!payload.contactId || !payload.amount) {
             return NextResponse.json(
                 { error: 'Invalid payload: missing required fields (contactId, amount)' },
@@ -34,22 +36,24 @@ export async function POST(req: Request) {
             );
         }
 
-        // Attach idempotencyKey and tenantId to payload
+        // Process synchronously (Vercel serverless — no Redis/BullMQ)
         const jobData = { ...payload, idempotencyKey, tenantId: auth.tenantId };
-
-        // Enqueue job with the idempotency key as jobId to prevent duplicate enqueues
-        const job = await integrationQueue.add('process-invoice', jobData, {
-            jobId: idempotencyKey, // Prevents duplicate jobs in BullMQ
-        });
+        const result = await processInvoiceJob(jobData);
 
         return NextResponse.json({
             status: 'success',
-            message: 'Invoice accepted and queued',
-            jobId: job.id,
-        }, { status: 202 });
+            message: 'Invoice processed successfully.',
+            invoiceId: result.id,
+            idempotencyKey,
+        }, { status: 201 });
 
     } catch (error: unknown) {
-        console.error('Error queuing invoice:', error);
-        return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+        console.error('Error processing invoice:', error);
+        const msg = error instanceof Error ? error.message : String(error);
+        const isConflict = typeof msg === 'string' && (msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('unique'));
+        return NextResponse.json(
+            { error: isConflict ? 'Duplicate record — invoice already exists.' : msg },
+            { status: isConflict ? 409 : 500 }
+        );
     }
 }

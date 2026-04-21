@@ -12,6 +12,10 @@ export async function POST(req: Request) {
         let idempotencyKey = req.headers.get('idempotency-key');
         const payload = await req.json();
 
+        if (!payload || typeof payload !== 'object') {
+            return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+        }
+
         if (!idempotencyKey) {
             idempotencyKey = payload.idempotencyKey || (Array.isArray(payload.items) && payload.items[0]?.manifestNumber);
         }

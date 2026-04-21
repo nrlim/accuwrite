@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export interface TruXosInvoiceData {
     idempotencyKey: string;
@@ -154,7 +152,7 @@ export async function processBatchInvoicesJob(batchData: { items: TruXosInvoiceD
         }
     }
 
-    // Throw so BullMQ can track failures, but we might want partial success
+    // Throw if entire batch failed
     if (errors.length > 0 && results.length === 0) {
         throw new Error(`Entire batch failed. First error: ${errors[0].error}`);
     }

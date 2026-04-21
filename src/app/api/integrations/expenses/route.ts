@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { integrationQueue } from '@/lib/queue';
+import { processExpenseJob } from '@/lib/expenseProcessor';
 import { verifyApiAuth } from '@/lib/apiAuth';
 
 export async function POST(req: Request) {
@@ -9,8 +9,18 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: auth.error }, { status: auth.status });
         }
 
-        const idempotencyKey = req.headers.get('idempotency-key');
+        let idempotencyKey = req.headers.get('idempotency-key');
         const payload = await req.json();
+
+        if (!payload || typeof payload !== 'object') {
+            return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+        }
+
+        // TruXos compatibility: fallback idempotency key from manifestNumber
+        if (payload.manifestNumber) {
+            payload.number = payload.number || payload.manifestNumber;
+            idempotencyKey = idempotencyKey || payload.manifestNumber;
+        }
 
         if (!idempotencyKey) {
             return NextResponse.json(
@@ -27,23 +37,25 @@ export async function POST(req: Request) {
             );
         }
 
-        // Attach idempotencyKey and tenantId to payload
+        // Process synchronously (Vercel serverless — no Redis/BullMQ)
         const jobData = { ...payload, idempotencyKey, tenantId: auth.tenantId };
-
-        // Enqueue job
-        const job = await integrationQueue.add('process-expense', jobData, {
-            jobId: idempotencyKey, // Prevents duplicate jobs in BullMQ
-        });
+        const result = await processExpenseJob(jobData);
 
         return NextResponse.json({
             status: 'success',
-            message: 'Expense record accepted and queued.',
-            jobId: job.id,
-            idempotencyKey
-        }, { status: 202 });
+            message: 'Expense record processed successfully.',
+            billId: result.id,
+            idempotencyKey,
+        }, { status: 201 });
 
-    } catch (error: any) {
-        console.error('Error queuing expense:', error);
-        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    } catch (error: unknown) {
+        console.error('Error processing expense:', error);
+        // Return a helpful message instead of raw internal error
+        const msg = error instanceof Error ? error.message : String(error);
+        const isConflict = typeof msg === 'string' && (msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('unique'));
+        return NextResponse.json(
+            { error: isConflict ? 'Duplicate record — bill already exists.' : msg },
+            { status: isConflict ? 409 : 500 }
+        );
     }
 }

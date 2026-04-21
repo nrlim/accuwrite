@@ -83,6 +83,10 @@ export async function POST(req: Request) {
         const tenantId = auth.tenantId!;
         const payload = await req.json();
 
+        if (!payload || typeof payload !== 'object') {
+            return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+        }
+
         if (!payload.name || !payload.type) {
             return NextResponse.json(
                 { error: 'Missing required fields: name and type' },

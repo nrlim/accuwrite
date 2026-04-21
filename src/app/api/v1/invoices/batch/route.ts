@@ -11,6 +11,10 @@ export async function POST(req: Request) {
 
         const payload = await req.json();
 
+        if (!payload || typeof payload !== 'object') {
+            return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+        }
+
         if (!Array.isArray(payload.items)) {
             return NextResponse.json(
                 { error: 'Invalid payload: "items" must be an array' },

@@ -6,12 +6,15 @@ import { slugify } from "@/lib/utils";
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
+        if (!body || typeof body !== 'object') {
+            return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+        }
         const { companyName, fullName, username, password } = body;
 
         // Validation
-        if (!companyName || !fullName || !username || !password) {
+        if (!companyName || !fullName || !username || !password || typeof companyName !== 'string' || typeof fullName !== 'string' || typeof username !== 'string' || typeof password !== 'string') {
             return NextResponse.json(
-                { error: "All fields are required." },
+                { error: "All fields are required and must be valid text." },
                 { status: 400 }
             );
         }

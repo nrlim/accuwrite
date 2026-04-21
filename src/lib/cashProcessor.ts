@@ -1,6 +1,5 @@
-import { PrismaClient, CashTxType } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
+import { CashTxType } from '@prisma/client';
 
 export interface CashTxIntegrationData {
     sourceSys: string;
